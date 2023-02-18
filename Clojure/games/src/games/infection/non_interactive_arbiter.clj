@@ -1,7 +1,7 @@
 (ns games.infection.non-interactive-arbiter
   (:require [clojure.test :refer :all]
-            (dk-aia-clojure [definitions :as aia-defs]
-	                    [infection-utilities :as infection-utils])
+            (dk-aia-clojure [definitions :as aia-defs])
+	    (games.infection [infection-utilities :as infection-utils])
     	    [clojure.string :as str]
 	    [clojure.edn :as edn]
   )

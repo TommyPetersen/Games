@@ -1,7 +1,7 @@
 (ns games.infection.interactive-gui-player
   (:require [clojure.test :refer :all]
-            (dk-aia-clojure [infection-utilities :as infection-utils]
-                 	    [game-utilities :as game-utils])
+            (games [game-utilities :as game-utils])
+	    (games.infection [infection-utilities :as infection-utils])
     	    [clojure.string :as str]
 	    [clojure.edn :as edn]
   )

@@ -1,6 +1,6 @@
 (ns games.infection.interactive-text-player
   (:require [clojure.test :refer :all]
-            (dk-aia-clojure [infection-utilities :as infection-utils])
+	    (games.infection [infection-utilities :as infection-utils])
     	    [clojure.string :as str]
 	    [clojure.edn :as edn]
   )
