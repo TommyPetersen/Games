@@ -24,6 +24,7 @@
        (case first-data-element
          "initGame"             (do
 	                         (reset! board (connect-four-utils/empty-board 7))
+				 (reset! game-status {})
 	                         {:data ["Ready"]}
                                )
          "newMove"             (let [player (nth (:data unit-input) 1)
