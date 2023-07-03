@@ -18,7 +18,7 @@
     (reset! game-initialised true)
     {
       :status 200
-      :headers {"Content-Type" "text/html"}
+      :headers {"Content-Type" "text/json"}
       :body (json/write-str result)
     }
   )
@@ -50,9 +50,10 @@
 
 (defn get-status [req]
   (let [result (non-interactive-arbiter/arbiter {:data ["getStatus"]})]
+    (println (str "Result: " result))
     {
       :status 200
-      :headers {"Content-Type" "text/html"}
+      :headers {"Content-Type" "text/json"}
       :body (json/write-str result)
     }
   )

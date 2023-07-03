@@ -8,5 +8,5 @@
   :java-source-paths ["src/aiamg_java/"]
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}}
-  :repl-options {:init-ns games.connect-four.connect-four-utilities}
+  :repl-options {:init-ns games.game-utilities}
 )
