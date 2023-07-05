@@ -21,11 +21,11 @@
 (defn arbiter [unit-input]
   (let [first-data-element (first (:data unit-input))]
        (case first-data-element
-         "initGame"            (do
+         "init-game"           (do
 	                         (reset! prize-numbers {:P1 (str (+ 1 (rand-int 6))) :P2 (str (+ 1 (rand-int 6)))})
 	                         {:data ["Ready"]}
                                )
-         "newMove"             (let [player (nth (:data unit-input) 1)
+         "new-move"            (let [player (nth (:data unit-input) 1)
 	                             move (nth (:data unit-input) 2)]
 				    (if (= move ((keyword player) @prize-numbers))
 				      (do
@@ -35,7 +35,7 @@
 				      {:data [(str {:continuation-sign "+" :move move})]}
 				    )
 			       )
-	 "getStatus"           {:data [(str @game-status)]}
+	 "get-status"          {:data [(str @game-status)]}
 
 	 {:data ["Error in data"]}
        )

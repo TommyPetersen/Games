@@ -46,19 +46,19 @@
        (fn [unit-input]
          (let [first-data-element (first (:data unit-input))]
               (case first-data-element
-	        "initGame"	    (do
+	        "init-game"	    (do
 		                      (reset! board (connect-four-utils/empty-board 7))
 			              {:data ["Ok"]}
 			            )
-                "getFirstMove" {:data [(str (get-move player-number true))]}
-                "getNextMove"  (do
-		                 (update-board unit-input)
-		                 {:data [(str (get-move player-number false))]}
-			       )
-                "notifyMove"  (do
-		                (update-board unit-input)
-			        {:data ["Accepted"]}
-			      )
+                "get-first-move"    {:data [(str (get-move player-number true))]}
+                "get-next-move"     (do
+		                      (update-board unit-input)
+		                      {:data [(str (get-move player-number false))]}
+			            )
+                "notify-move"       (do
+		                      (update-board unit-input)
+			              {:data ["Accepted"]}
+			            )
 
 	        {:data ["Error in data"]}
               )

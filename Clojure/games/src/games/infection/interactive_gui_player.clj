@@ -61,18 +61,18 @@
        (fn [unit-input]
          (let [first-data-element (first (:data unit-input))]
              (case first-data-element
-	        "initGame"		  (do
+	        "init-game"		  (do
 		                            (reset! camera (game-utils/new-camera window-width window-height))
 		                            (reset! board (infection-utils/init-board "*" "¤"))
 					    (game-utils/gui-show-board @board @camera base-frame cell-coords nil)
 					    {:data ["Ok"]}
 					  )
-                "getFirstMove"            {:data [(str (get-user-move player-number))]}
-                "getNextMove"             (do
+                "get-first-move"          {:data [(str (get-user-move player-number))]}
+                "get-next-move"           (do
 		                            (update-board unit-input)
 					    {:data [(str (get-user-move player-number))]}
 					  )
-                "notifyMove"              (do
+                "notify-move"             (do
 		                            (update-board unit-input)
 					    {:data ["Accepted"]}
 					  )

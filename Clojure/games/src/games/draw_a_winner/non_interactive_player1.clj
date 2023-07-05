@@ -18,10 +18,10 @@
 (defn player1 [unit-input]
   (let [first-data-element (first (:data unit-input))]
        (case first-data-element
-         "initGame"                {:data ["Ok"]}
-         "getFirstMove"            {:data [(str (+ 1 (rand-int 6)))]}
-         "getNextMove"             {:data [(str (+ 1 (rand-int 6)))]}
-         "notifyMove"              {:data ["Accepted"]}
+         "init-game"                {:data ["Ok"]}
+         "get-first-move"           {:data [(str (+ 1 (rand-int 6)))]}
+         "get-next-move"            {:data [(str (+ 1 (rand-int 6)))]}
+         "notify-move"              {:data ["Accepted"]}
 
 	 {:data ["Error in data"]}
        )

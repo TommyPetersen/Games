@@ -22,12 +22,12 @@
 (defn arbiter [unit-input]
   (let [first-data-element (first (:data unit-input))]
        (case first-data-element
-         "initGame"             (do
+         "init-game"           (do
 	                         (reset! board (connect-four-utils/empty-board 7))
 				 (reset! game-status {})
 	                         {:data ["Ready"]}
                                )
-         "newMove"             (let [player (nth (:data unit-input) 1)
+         "new-move"            (let [player (nth (:data unit-input) 1)
 	                             move (Integer/parseInt (nth (:data unit-input) 2))
 				     j (- move 1)]
 				    (if (not (connect-four-utils/column-valid? @board 7 6 j))
@@ -54,7 +54,7 @@
 					)
 				     )
 			       )
-	 "getStatus"           {:data [(str @game-status)]}
+	 "get-status"          {:data [(str @game-status)]}
 
 	 {:data ["Error in data"]}
        )

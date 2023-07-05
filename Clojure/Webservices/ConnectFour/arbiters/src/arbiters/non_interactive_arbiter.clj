@@ -14,7 +14,7 @@
 (def game-initialised (atom false))
 
 (defn init-game [req]
-  (let [result (non-interactive-arbiter/arbiter {:data ["initGame"]})]
+  (let [result (non-interactive-arbiter/arbiter {:data ["init-game"]})]
     (reset! game-initialised true)
     {
       :status 200
@@ -32,7 +32,7 @@
     (let [
   	   player (:player (:params req))
 	   move-value (:move-value (:params req))
-           result (non-interactive-arbiter/arbiter {:data ["newMove" player move-value]})
+           result (non-interactive-arbiter/arbiter {:data ["new-move" player move-value]})
          ]
          {
            :status 200
@@ -49,7 +49,7 @@
 )
 
 (defn get-status [req]
-  (let [result (non-interactive-arbiter/arbiter {:data ["getStatus"]})]
+  (let [result (non-interactive-arbiter/arbiter {:data ["get-status"]})]
     (println (str "Result: " result))
     {
       :status 200
@@ -59,11 +59,21 @@
   )
 )
 
+(defn notify-timeout [req]
+  {
+    :status 200
+    :headers {"Content-Type" "text/plain"}
+    :body "Oh no, time is up!"
+  }
+)
+
 (defroutes app-routes
   (GET "/" [] "This is a non-interactive arbiter for the game \"Connect Four\".")
   (GET "/init-game" [] init-game)
   (GET "/new-move" [] new-move)
   (GET "/get-status" [] get-status)
+  (GET "/notify-timeout" [] notify-timeout)
+  
   (route/not-found "Error, page not found!")
 )
 

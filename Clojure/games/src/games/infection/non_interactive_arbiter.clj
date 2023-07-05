@@ -23,11 +23,11 @@
 (defn arbiter [unit-input]
   (let [first-data-element (first (:data unit-input))]
        (case first-data-element
-         "initGame"            (do
+         "init-game"           (do
 	                         (reset! board (infection-utils/init-board "P1" "P2"))
 	                         {:data ["Ready"]}
                                )
-         "newMove"             (let [
+         "new-move"            (let [
 	                              player (nth (:data unit-input) 1)
 				      other-player (if (= player "P1") "P2" "P1")
 	                              move (edn/read-string (nth (:data unit-input) 2))
@@ -63,7 +63,7 @@
 					)
 				     )
 			       )
-	 "getStatus"           {:data [(str @game-status)]}
+	 "get-status"          {:data [(str @game-status)]}
 
 	 {:data ["Error in data"]}
        )
