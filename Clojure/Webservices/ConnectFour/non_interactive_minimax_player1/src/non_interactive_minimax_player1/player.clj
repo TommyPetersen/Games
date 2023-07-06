@@ -1,4 +1,4 @@
-(ns arbiters.non-interactive-minimax-player1
+(ns non-interactive-minimax-player1.player
   (:require [org.httpkit.server :as server]
             [compojure.core :refer :all]
 	    [compojure.route :as route]
@@ -101,7 +101,7 @@
 )
 
 (defroutes app-routes
-  (GET "/" [] "This is a non-interactive arbiter for the game \"Connect Four\".")
+  (GET "/" [] "This is a non-interactive minimax player for the game \"Connect Four\".")
   (GET "/init-game" [] init-game)
   (GET "/get-first-move" [] get-first-move)
   (GET "/get-next-move" [] get-next-move)
