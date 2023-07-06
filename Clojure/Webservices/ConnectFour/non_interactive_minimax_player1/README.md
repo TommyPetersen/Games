@@ -1,4 +1,4 @@
-# arbiters
+# non_interactive_minimax_player1
 
 FIXME: description
 
@@ -10,7 +10,7 @@ Download from http://example.com/FIXME.
 
 FIXME: explanation
 
-    $ java -jar arbiters-0.1.0-standalone.jar [args]
+    $ java -jar non_interactive_minimax_player1-0.1.0-standalone.jar [args]
 
 ## Options
 

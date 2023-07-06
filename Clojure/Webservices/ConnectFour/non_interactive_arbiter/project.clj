@@ -1,6 +1,6 @@
-(defproject arbiters "0.1.0-SNAPSHOT"
-  :description "Arbiters to be used for Connect Four"
-  :url "https://www.ai-agents.com/"
+(defproject non_interactive_arbiter "0.1.0-SNAPSHOT"
+  :description "Arbiter to be used for Connect Four"
+  :url "https://www.ai-agents.com"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [
@@ -10,7 +10,7 @@
 		  [ring/ring-defaults "0.3.4"]
 		  [org.clojure/data.json "2.4.0"]
 		]
-  :java-source-paths ["src/aiamg_java/"]
-  :main ^:skip-aot arbiters.non-interactive-arbiter
+  :java-source-paths ["src/aiamg_java"]
+  :main ^:skip-aot non-interactive-arbiter.arbiter
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

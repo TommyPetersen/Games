@@ -1,6 +1,6 @@
-(ns arbiters.core-test
+(ns non-interactive-arbiter.core-test
   (:require [clojure.test :refer :all]
-            [arbiters.core :refer :all]))
+            [non-interactive-arbiter.core :refer :all]))
 
 (deftest a-test
   (testing "FIXME, I fail."
