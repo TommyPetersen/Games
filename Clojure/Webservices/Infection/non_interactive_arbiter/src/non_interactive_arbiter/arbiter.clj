@@ -1,4 +1,4 @@
-(ns non-interactive-minimax-player2.player
+(ns non-interactive-arbiter.arbiter
   (:require [org.httpkit.server :as server]
             [compojure.core :refer :all]
 	    [compojure.route :as route]
@@ -6,7 +6,7 @@
 	    [clojure.pprint :as pp]
 	    [clojure.string :as str]
 	    [clojure.data.json :as json]
-	    [games.connect-four.non-interactive-minimax-player :as non-interactive-minimax-player]
+	    [games.infection.non-interactive-arbiter :as non-interactive-arbiter]
   )
   (:gen-class)
 )
@@ -14,7 +14,7 @@
 (def game-initialised (atom false))
 
 (defn init-game [req]
-  (let [result (non-interactive-minimax-player/player2 {:data ["init-game"]})]
+  (let [result (non-interactive-arbiter/arbiter {:data ["init-game"]})]
     (reset! game-initialised true)
     {
       :status 200
@@ -24,14 +24,15 @@
   )
 )
 
-(defn get-next-move [req]
+(defn new-move [req]
   (do
     (pp/pprint req)
   )
   (if @game-initialised
     (let [
+  	   player (:player (:params req))
 	   move-value (:move-value (:params req))
-           result (non-interactive-minimax-player/player2 {:data ["get-next-move" move-value]})
+	   result (non-interactive-arbiter/arbiter {:data ["new-move" player move-value]})
          ]
          {
            :status 200
@@ -47,25 +48,13 @@
   )
 )
 
-(defn notify-move [req]
-  (do
-    (pp/pprint req)
-  )
-  (if @game-initialised
-    (let [
-	   move-value (:move-value (:params req))
-           result (non-interactive-minimax-player/player2 {:data ["notify-move" move-value]})
-         ]
-         {
-           :status 200
-           :headers {"Content-Type" "text/json"}
-           :body (json/write-str result)
-         }
-    )
+(defn get-status [req]
+  (let [result (non-interactive-arbiter/arbiter {:data ["get-status"]})]
+    (println (str "Result: " result))
     {
-      :status 409
-      :headers {"Content-Type" "text/plain"}
-      :body "The game has not been initialised!"
+      :status 200
+      :headers {"Content-Type" "text/json"}
+      :body (json/write-str result)
     }
   )
 )
@@ -79,10 +68,10 @@
 )
 
 (defroutes app-routes
-  (GET "/" [] "This is a non-interactive minimax player for the game \"Connect Four\".")
+  (GET "/" [] "This is a non-interactive arbiter for the game \"Infection\".")
   (GET "/init-game" [] init-game)
-  (GET "/get-next-move" [] get-next-move)
-  (GET "/notify-move" [] notify-move)
+  (GET "/new-move" [] new-move)
+  (GET "/get-status" [] get-status)
   (GET "/notify-timeout" [] notify-timeout)
   
   (route/not-found "Error, page not found!")
@@ -91,7 +80,7 @@
 (defn -main
   "Application main entry."
   [& args]
-  (let [port (Integer/parseInt (or (System/getenv "PORT") "3002"))]
+  (let [port (Integer/parseInt (or (System/getenv "PORT") "3100"))]
        (server/run-server (wrap-defaults #'app-routes site-defaults) {:port port})
        (println (str "Running arbiter webserver at http://127.0.0.1:" port "/"))
   )

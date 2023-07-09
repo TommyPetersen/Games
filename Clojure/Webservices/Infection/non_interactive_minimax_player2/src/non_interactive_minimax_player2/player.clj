@@ -6,7 +6,7 @@
 	    [clojure.pprint :as pp]
 	    [clojure.string :as str]
 	    [clojure.data.json :as json]
-	    [games.connect-four.non-interactive-minimax-player :as non-interactive-minimax-player]
+	    [games.infection.non-interactive-minimax-player :as non-interactive-minimax-player]
   )
   (:gen-class)
 )
@@ -79,7 +79,7 @@
 )
 
 (defroutes app-routes
-  (GET "/" [] "This is a non-interactive minimax player for the game \"Connect Four\".")
+  (GET "/" [] "This is a non-interactive minimax player for the game \"Infection\".")
   (GET "/init-game" [] init-game)
   (GET "/get-next-move" [] get-next-move)
   (GET "/notify-move" [] notify-move)
@@ -91,7 +91,7 @@
 (defn -main
   "Application main entry."
   [& args]
-  (let [port (Integer/parseInt (or (System/getenv "PORT") "3002"))]
+  (let [port (Integer/parseInt (or (System/getenv "PORT") "3102"))]
        (server/run-server (wrap-defaults #'app-routes site-defaults) {:port port})
        (println (str "Running arbiter webserver at http://127.0.0.1:" port "/"))
   )

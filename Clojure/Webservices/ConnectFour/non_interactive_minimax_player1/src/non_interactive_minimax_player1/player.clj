@@ -95,8 +95,8 @@
 (defn notify-timeout [req]
   {
     :status 200
-    :headers {"Content-Type" "text/plain"}
-    :body "Oh no, time is up!"
+    :headers {"Content-Type" "text/json"}
+    :body (json/write-str {:data ["Oh no, time is up!"]})
   }
 )
 

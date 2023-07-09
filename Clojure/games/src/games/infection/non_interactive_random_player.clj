@@ -20,18 +20,12 @@
 	 player-chip (if (= player-number 1) "*" "¤")
 	 opponent-chip (if (= player-number 1) "¤" "*")
          get-user-move (fn [player-number]
-	                   (println (str "\n\tYour board player " player-number ":"))
-	                   (println (str "\n" (infection-utils/board-to-str @board "\t\t") "\n"))
-	                   (println (str "\tPlayer" player-number ", enter your move: "))
-			   (flush)
 			   (let [
 				  move (infection-utils/get-random-valid-move @board player-chip)
 			        ]
 			        (if (infection-utils/move-valid? @board player-chip move)
 				  (swap! board infection-utils/make-move move)
 				)
-				(println (str "\n\tYour updated board player " player-number ":"))
-	                        (println (str "\n" (infection-utils/board-to-str @board "\t\t") "\n"))
 				(str move)
 			   )
 		       )
@@ -60,8 +54,6 @@
 					  )
                 "notify-move"             (do
 		                            (update-board unit-input)
-					    (println (str "\n\tYour board player " player-number ":"))
-					    (println (str "\n" (infection-utils/board-to-str @board "\t\t") "\n"))
 					    {:data ["Accepted"]}
 					  )
              )
