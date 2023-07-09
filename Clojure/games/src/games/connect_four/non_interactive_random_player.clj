@@ -28,10 +28,6 @@
 	 player-chip (if (= player-number 1) "1" "2")
 	 opponent-chip (if (= player-number 1) "2" "1")
          get-move (fn [player-number]
-	              (println (str "\n\tYour board player " player-number ":"))
-	              (println (str "\n" (connect-four-utils/board-to-str @board 6 "\t\t") "\n"))
-	              (print (str "\tPlayer" player-number ", enter your move (1 - 7): "))
-		      (flush)
 		      (let [
 			     move-string (str (+ 1 (connect-four-utils/get-random-valid-column @board 6)))
 			     j (- (Integer/parseInt move-string) 1)
@@ -39,8 +35,6 @@
 			   (if (connect-four-utils/column-valid? @board 7 6 j)
 			     (swap! board connect-four-utils/insert j player-chip)
 			   )
-			   (println (str "\n\tYour updated board player " player-number ":"))
-	                   (println (str "\n" (connect-four-utils/board-to-str @board 6 "\t\t") "\n"))
 			   move-string
 		      )
 		  )
@@ -61,21 +55,19 @@
     (fn [unit-input]
       (let [first-data-element (first (:data unit-input))]
            (case first-data-element
-	     "initGame"	    (do
-		              (new-board)
-			      {:data ["Ok"]}
-			    )
-             "getFirstMove" {:data [(str (get-move player-number))]}
-             "getNextMove"  (do
-		              (update-board unit-input)
-		              {:data [(str (get-move player-number))]}
-			    )
-             "notifyMove"   (do
-		              (update-board unit-input)
-			      (println (str "\n\tYour board player " player-number ":"))
-			      (println (str "\n" (connect-four-utils/board-to-str @board 6 "\t\t") "\n"))
-			      {:data ["Accepted"]}
-			    )
+	     "init-game"      (do
+		                (new-board)
+			        {:data ["Ok"]}
+			      )
+             "get-first-move" {:data [(str (get-move player-number))]}
+             "get-next-move"  (do
+		                (update-board unit-input)
+		                {:data [(str (get-move player-number))]}
+			      )
+             "notify-move"   (do
+		               (update-board unit-input)
+			       {:data ["Accepted"]}
+			     )
 
 	     {:data ["Error in data"]}
            )

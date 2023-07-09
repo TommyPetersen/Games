@@ -23,10 +23,10 @@
 (defn player [unit-input]
   (let [first-data-element (first (:data unit-input))]
       (case first-data-element
-         "initGame"                {:data ["Ok"]}
-         "getFirstMove"            {:data [(str (get-user-move))]}
-         "getNextMove"             {:data [(str (get-user-move))]}
-         "notifyMove"              {:data ["Accepted"]}
+         "init-game"                {:data ["Ok"]}
+         "get-first-move"           {:data [(str (get-user-move))]}
+         "get-next-move"            {:data [(str (get-user-move))]}
+         "notify-move"              {:data ["Accepted"]}
 
 	 {:data "Error in data"}
        )

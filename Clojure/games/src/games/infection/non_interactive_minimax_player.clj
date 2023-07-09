@@ -51,19 +51,19 @@
        (fn [unit-input]
          (let [first-data-element (first (:data unit-input))]
               (case first-data-element
-	        "initGame"	    (do
+	        "init-game"         (do
 		                      (reset! board (init-board))
 			              {:data ["Ok"]}
 			            )
-                "getFirstMove" {:data [(str (get-move))]}
-                "getNextMove"  (do
-		                 (update-board unit-input)
-		                 {:data [(str (get-move))]}
-			       )
-                "notifyMove"  (do
-		                (update-board unit-input)
-			        {:data ["Accepted"]}
-			      )
+                "get-first-move"    {:data [(str (get-move))]}
+                "get-next-move"     (do
+		                      (update-board unit-input)
+		                      {:data [(str (get-move))]}
+			            )
+                "notify-move"       (do
+		                      (update-board unit-input)
+			              {:data ["Accepted"]}
+			            )
 
 	        {:data ["Error in data"]}
               )
