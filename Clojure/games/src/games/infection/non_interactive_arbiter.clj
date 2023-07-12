@@ -25,6 +25,7 @@
        (case first-data-element
          "init-game"           (do
 	                         (reset! board (infection-utils/init-board "P1" "P2"))
+	                         (reset! game-status {})
 	                         {:data ["Ready"]}
                                )
          "new-move"            (let [

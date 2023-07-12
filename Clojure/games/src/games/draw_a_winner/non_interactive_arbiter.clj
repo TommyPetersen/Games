@@ -23,6 +23,7 @@
        (case first-data-element
          "init-game"           (do
 	                         (reset! prize-numbers {:P1 (str (+ 1 (rand-int 6))) :P2 (str (+ 1 (rand-int 6)))})
+	                         (reset! game-status {})
 	                         {:data ["Ready"]}
                                )
          "new-move"            (let [player (nth (:data unit-input) 1)

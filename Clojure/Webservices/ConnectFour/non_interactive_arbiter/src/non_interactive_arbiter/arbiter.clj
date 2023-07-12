@@ -82,6 +82,6 @@
   [& args]
   (let [port (Integer/parseInt (or (System/getenv "PORT") "3000"))]
        (server/run-server (wrap-defaults #'app-routes site-defaults) {:port port})
-       (println (str "Running arbiter webserver at http://127.0.0.1:" port "/"))
+       (println (str "Running '" (:ns (meta #'-main)) "' as webservice at 'http://127.0.0.1:" port "'"))
   )
 )
