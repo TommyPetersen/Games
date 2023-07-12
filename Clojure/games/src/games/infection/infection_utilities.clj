@@ -3,7 +3,7 @@
   (:import (java.awt.event MouseEvent))
 )
 
-(defn update [board [j i] symbol]
+(defn update-cell [board [j i] symbol]
   (assoc board j (assoc (board j) i symbol))
 )
 
@@ -15,7 +15,7 @@
 	(if (= (count var-cells) 0)
 	  var-board
 	  (recur
-	    (update var-board (:coord (first var-cells)) (:symbol (first var-cells)))
+	    (update-cell var-board (:coord (first var-cells)) (:symbol (first var-cells)))
 	    (rest var-cells)
 	  )
 	)
