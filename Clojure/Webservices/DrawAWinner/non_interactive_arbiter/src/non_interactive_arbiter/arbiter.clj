@@ -25,9 +25,6 @@
 )
 
 (defn new-move [req]
-  (do
-    (pp/pprint req)
-  )
   (if @game-initialised
     (let [
   	   player (:player (:params req))
@@ -50,7 +47,6 @@
 
 (defn get-status [req]
   (let [result (non-interactive-arbiter/arbiter {:data ["get-status"]})]
-    (println (str "Result: " result))
     {
       :status 200
       :headers {"Content-Type" "text/json"}

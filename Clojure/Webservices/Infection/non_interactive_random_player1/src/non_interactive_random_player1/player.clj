@@ -25,9 +25,6 @@
 )
 
 (defn get-first-move [req]
-  (do
-    (pp/pprint req)
-  )
   (if @game-initialised
     (let [
            result (non-interactive-random-player/player1 {:data ["get-first-move"]})
@@ -47,9 +44,6 @@
 )
 
 (defn get-next-move [req]
-  (do
-    (pp/pprint req)
-  )
   (if @game-initialised
     (let [
 	   move-value (:move-value (:params req))
@@ -70,9 +64,6 @@
 )
 
 (defn notify-move [req]
-  (do
-    (pp/pprint req)
-  )
   (if @game-initialised
     (let [
 	   move-value (:move-value (:params req))
