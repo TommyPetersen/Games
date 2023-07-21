@@ -10,7 +10,6 @@
 		  [ring/ring-defaults "0.3.4"]
 		  [org.clojure/data.json "2.4.0"]
 		]
-  :java-source-paths ["src/aiamg_java"]
   :main ^:skip-aot non-interactive-random-player1.player
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

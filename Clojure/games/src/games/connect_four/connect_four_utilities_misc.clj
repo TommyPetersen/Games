@@ -1,5 +1,5 @@
-(ns games.connect-four.connect-four-utilities
-  (:require (games [game-utilities :as game-utils]))
+(ns games.connect-four.connect-four-utilities-misc
+  (:require (games [game-utilities-misc :as game-utils-misc]))
   (:import (java.awt.event MouseEvent))
 )
 ;;
@@ -53,7 +53,7 @@
 	      result
 	      (recur
 	        (inc k)
-	        (conj result (game-utils/lookup board coord))
+	        (conj result (game-utils-misc/lookup board coord))
 	        (next-index coord direction)
 	      )
 	  )
@@ -100,10 +100,10 @@
 	    (dec (count (nth board j)))
 	    -1
 	    ),
-	symbol (game-utils/lookup board [j i])]
+	symbol (game-utils-misc/lookup board [j i])]
     (loop [[k l] (next-index [j i] direction),
 	   counter 0]
-      (let [lookup-symbol (game-utils/lookup board [k l])]
+      (let [lookup-symbol (game-utils-misc/lookup board [k l])]
 	(if (or (= lookup-symbol nil)
 		(not (= lookup-symbol symbol)))
 	  counter
@@ -125,48 +125,13 @@
 
 (defn has-symbol-won? [board j symbol]
   (and
-    (= (game-utils/lookup board [j (dec (count (nth board j)))]) symbol)
+    (= (game-utils-misc/lookup board [j (dec (count (nth board j)))]) symbol)
     (has-won? board j)
   )
 )
 
 (defn is-full? [board board-height]
   (every? #(= (count %) board-height) board)
-)
-
-;;; VISUALIZATION ;;;
-(defn find-column-number [x cell-coords]
-  (let [pred #(and (>= x (:cell-left-border %)) (< x (:cell-right-border %)))]
-       (:column-index (first (filter pred cell-coords)))
-  )
-)
-
-(defn get-user-move [camera window-width window-height border-coords cell-coords]
-  (let [insets (.getInsetsOnScreen camera)]
-       (loop [mouse-event (.getCurrentMouseEventOnScreen camera)]
-	     (if (and (not= nil mouse-event) (= (.getButton mouse-event) MouseEvent/BUTTON1))
-	         (let [
-		        transformed-coords (game-utils/transform-coords-in-mouse-event insets mouse-event window-width window-height)
-			transformed-x (:transformed-x transformed-coords)
-			transformed-y (:transformed-y transformed-coords)
-		      ]
-		      (if (and (>= transformed-x (:left border-coords)) (<= transformed-x (:right border-coords))
-		               (>= transformed-y (:bottom border-coords)) (<= transformed-y (:top border-coords))
-		          )
-			  (find-column-number transformed-x cell-coords)
-			  (do
-                            (Thread/sleep 200)
-                            (recur (.getCurrentMouseEventOnScreen camera))
-	                  )
-		      )
-		 )
-		 (do
-                   (Thread/sleep 200)
-                   (recur (.getCurrentMouseEventOnScreen camera))
-	         )
-	     )
-       )
-  )
 )
 
 (defn board-to-str [board board-height row-tabulator]
@@ -188,7 +153,7 @@
 		     (str row-tabulator line-str "|")
 		     (recur
 		      (inc j)
-		      (let [symbol (game-utils/lookup board [j i])]
+		      (let [symbol (game-utils-misc/lookup board [j i])]
 		        (str line-str
 			    (cond (not symbol) "| "
 				  :other (str "|" symbol "")

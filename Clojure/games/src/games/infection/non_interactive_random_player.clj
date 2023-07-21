@@ -1,6 +1,6 @@
 (ns games.infection.non-interactive-random-player
   (:require [clojure.test :refer :all]
-	    (games.infection [infection-utilities :as infection-utils])
+	    (games.infection [infection-utilities-misc :as infection-utils-misc])
     	    [clojure.string :as str]
 	    [clojure.edn :as edn]
   )
@@ -16,15 +16,15 @@
 
 (defn new-player [player-number]
   (let [
-         board (atom (infection-utils/init-board "*" "¤"))
+         board (atom (infection-utils-misc/init-board "*" "¤"))
 	 player-chip (if (= player-number 1) "*" "¤")
 	 opponent-chip (if (= player-number 1) "¤" "*")
          get-user-move (fn [player-number]
 			   (let [
-				  move (infection-utils/get-random-valid-move @board player-chip)
+				  move (infection-utils-misc/get-random-valid-move @board player-chip)
 			        ]
-			        (if (infection-utils/move-valid? @board player-chip move)
-				  (swap! board infection-utils/make-move move)
+			        (if (infection-utils-misc/move-valid? @board player-chip move)
+				  (swap! board infection-utils-misc/make-move move)
 				)
 				(str move)
 			   )
@@ -34,8 +34,8 @@
 		                 move-string (nth (:data unit-input) 1)
 				 move (edn/read-string move-string)
 			       ]
-			       (if (infection-utils/move-valid? @board opponent-chip move)
-			         (swap! board infection-utils/make-move move)
+			       (if (infection-utils-misc/move-valid? @board opponent-chip move)
+			         (swap! board infection-utils-misc/make-move move)
 			       )
 			  )
 		      )
@@ -44,7 +44,7 @@
          (let [first-data-element (first (:data unit-input))]
              (case first-data-element
 	        "init-game"		  (do
-		                            (reset! board (infection-utils/init-board "*" "¤"))
+		                            (reset! board (infection-utils-misc/init-board "*" "¤"))
 					    {:data ["Ok"]}
 					  )
                 "get-first-move"          {:data [(str (get-user-move player-number))]}

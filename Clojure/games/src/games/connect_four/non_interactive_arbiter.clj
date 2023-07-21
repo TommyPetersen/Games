@@ -1,7 +1,7 @@
 (ns games.connect-four.non-interactive-arbiter
   (:require [clojure.test :refer :all]
             (dk-aia-clojure [definitions :as aia-defs])
-            (games.connect-four [connect-four-utilities :as connect-four-utils])
+            (games.connect-four [connect-four-utilities-misc :as connect-four-utils-misc])
     	    [clojure.string :as str]
   )
 )
@@ -23,27 +23,27 @@
   (let [first-data-element (first (:data unit-input))]
        (case first-data-element
          "init-game"           (do
-	                         (reset! board (connect-four-utils/empty-board 7))
+	                         (reset! board (connect-four-utils-misc/empty-board 7))
 				 (reset! game-status {})
 	                         {:data ["Ready"]}
                                )
          "new-move"            (let [player (nth (:data unit-input) 1)
 	                             move (Integer/parseInt (nth (:data unit-input) 2))
 				     j (- move 1)]
-				    (if (not (connect-four-utils/column-valid? @board 7 6 j))
+				    (if (not (connect-four-utils-misc/column-valid? @board 7 6 j))
 				        (do
 					  (reset! game-status {:disqualified (keyword player) :illegal-move (str move)})
 				          {:data [(str {:continuation-sign "-" :move (str move)})]}
 					)
 
 				        (do
-					  (swap! board connect-four-utils/insert j (keyword player))
-                                          (if (connect-four-utils/has-won? @board j)
+					  (swap! board connect-four-utils-misc/insert j (keyword player))
+                                          (if (connect-four-utils-misc/has-won? @board j)
 				            (do
 				              (reset! game-status {:winner (keyword player) :move (str move)})
                                               {:data [(str {:continuation-sign "-" :move (str move)})]}
                                             )
-					    (if (connect-four-utils/is-full? @board 6)
+					    (if (connect-four-utils-misc/is-full? @board 6)
 					      (do
 					        (reset! game-status {:winner :DRAW :move (str move)})
                                                 {:data [(str {:continuation-sign "-" :move (str move)})]}

@@ -1,7 +1,7 @@
 (ns games.connect-four.interactive-text-player
   (:require [clojure.test :refer :all]
             (dk-aia-clojure [definitions :as aia-defs])
-            (games.connect-four [connect-four-utilities :as connect-four-utils])
+            (games.connect-four [connect-four-utilities-misc :as connect-four-utils-misc])
     	    [clojure.string :as str]
   )
 )
@@ -16,23 +16,23 @@
 
 (defn new-player [player-number]
   (let [
-         board (atom (connect-four-utils/empty-board 7))
+         board (atom (connect-four-utils-misc/empty-board 7))
 	 player-chip (if (= player-number 1) "*" "¤")
 	 opponent-chip (if (= player-number 1) "¤" "*")
          get-user-move (fn [player-number]
 	                   (println (str "\n\tYour board player " player-number ":"))
-	                   (println (str "\n" (connect-four-utils/board-to-str @board 6 "\t\t") "\n"))
+	                   (println (str "\n" (connect-four-utils-misc/board-to-str @board 6 "\t\t") "\n"))
 	                   (print (str "\tPlayer" player-number ", enter your move (1 - 7): "))
 			   (flush)
 			   (let [
 			          move-string (read-line)
 				  j (- (Integer/parseInt move-string) 1)
 			        ]
-			        (if (connect-four-utils/column-valid? @board 7 6 j)
-				  (swap! board connect-four-utils/insert j player-chip)
+			        (if (connect-four-utils-misc/column-valid? @board 7 6 j)
+				  (swap! board connect-four-utils-misc/insert j player-chip)
 				)
 				(println (str "\n\tYour updated board player " player-number ":"))
-	                        (println (str "\n" (connect-four-utils/board-to-str @board 6 "\t\t") "\n"))
+	                        (println (str "\n" (connect-four-utils-misc/board-to-str @board 6 "\t\t") "\n"))
 				move-string
 			   )
 		       )
@@ -41,8 +41,8 @@
 		                 move-string (nth (:data unit-input) 1)
 				 j (- (Integer/parseInt move-string) 1)
 			       ]
-			       (if (connect-four-utils/column-valid? @board 7 6 j)
-			         (swap! board connect-four-utils/insert j opponent-chip)
+			       (if (connect-four-utils-misc/column-valid? @board 7 6 j)
+			         (swap! board connect-four-utils-misc/insert j opponent-chip)
 			       )
 			  )
 		      )
@@ -51,18 +51,18 @@
          (let [first-data-element (first (:data unit-input))]
              (case first-data-element
 	        "init-game"		  (do
-		                            (reset! board (connect-four-utils/empty-board 7))
+		                            (reset! board (connect-four-utils-misc/empty-board 7))
 					    {:data ["Ok"]}
 					  )
                 "get-first-move"          {:data [(str (get-user-move player-number))]}
-                "get-next-nove"           (do
+                "get-next-move"           (do
 		                            (update-board unit-input)
 		                            {:data [(str (get-user-move player-number))]}
 					  )
                 "notify-move"             (do
 		                            (update-board unit-input)
 					    (println (str "\n\tYour board player " player-number ":"))
-					    (println (str "\n" (connect-four-utils/board-to-str @board 6 "\t\t") "\n"))
+					    (println (str "\n" (connect-four-utils-misc/board-to-str @board 6 "\t\t") "\n"))
 					    {:data ["Accepted"]}
 					  )
 					  

@@ -1,6 +1,5 @@
-(ns games.infection.infection-utilities
-  (:require (games [game-utilities :as game-utils]))
-  (:import (java.awt.event MouseEvent))
+(ns games.infection.infection-utilities-misc
+  (:require (games [game-utilities-misc :as game-utils-misc]))
 )
 
 (defn update-cell [board [j i] symbol]
@@ -55,7 +54,7 @@
 	    result
 	    (recur
 	      (inc k)
-	      (conj result (game-utils/lookup board coord))
+	      (conj result (game-utils-misc/lookup board coord))
 	      (next-coord coord direction)
 	    )
         )
@@ -66,7 +65,7 @@
   (for [
          j (range 7)
 	 i (range 7)
-	 :when (= (game-utils/lookup board [j i]) symbol)
+	 :when (= (game-utils-misc/lookup board [j i]) symbol)
        ]
        [j i]
   )
@@ -76,7 +75,7 @@
   (for [
          j (range 7)
 	 i (range 7)
-	 :when (not= (game-utils/lookup board [j i]) nil)
+	 :when (not= (game-utils-misc/lookup board [j i]) nil)
        ]
        [j i]
   )
@@ -106,7 +105,7 @@
   (let [board-move-seq (for [
                               from-coord (get-all-coords-with-given-symbol board symbol)
 	                      to-coord (get-neighbourhood board from-coord 2)
-	                      :when (= (game-utils/lookup board to-coord) nil)
+	                      :when (= (game-utils-misc/lookup board to-coord) nil)
                             ]
                             {
                               :from-coord from-coord
@@ -137,13 +136,13 @@
 
 (defn get-neighbourhood-infected-by-others [board center-coord radius]
   (let [
-         center-symbol (game-utils/lookup board center-coord)
+         center-symbol (game-utils-misc/lookup board center-coord)
 	 neighbourhood-coords (get-neighbourhood board center-coord 1)
        ]
        (vec
          (for [
                 neighbourhood-coord neighbourhood-coords
-  	        neighbourhood-symbol (game-utils/lookup board neighbourhood-coord)
+  	        neighbourhood-symbol (game-utils-misc/lookup board neighbourhood-coord)
 	        :when (and (not= neighbourhood-symbol nil)
 	                   (not= neighbourhood-symbol center-symbol))
               ]
@@ -159,7 +158,7 @@
       (let [
              from-coord (:from-coord move)
 	     to-coord (:to-coord move)
-	     symbol (game-utils/lookup board from-coord)
+	     symbol (game-utils-misc/lookup board from-coord)
 	     is-spreading? (and (< (Math/abs (- (first from-coord) (first to-coord))) 2)
 	                        (< (Math/abs (- (second from-coord) (second to-coord))) 2))
 	     cell-updates (if is-spreading? [{:coord to-coord :symbol symbol}]
@@ -200,65 +199,6 @@
   )
 )
 
-;;; VISUALIZATION ;;;
-(defn find-column-number [x cell-coords]
-  (let [pred #(and (>= x (:cell-left-border %)) (< x (:cell-right-border %)))]
-       (:column-index (first (filter pred cell-coords)))
-  )
-)
-
-(defn find-cell-index [x y cell-coords]
-  (let [
-         pred #(and (>= x (:cell-left-border %)) (< x (:cell-right-border %))
-                    (>= y (:cell-bottom-border %)) (< y (:cell-top-border %)))
-	 cell-coord (first (filter pred cell-coords))
-       ]
-       {:row-index (:row-index cell-coord) :column-index (:column-index cell-coord)}
-  )
-)
-
-(defn get-user-selection [camera window-width window-height border-coords cell-coords]
-  (let [
-         insets (.getInsetsOnScreen camera)
-	 find-cell-fn #(loop [mouse-event (.getCurrentMouseEventOnScreen camera)]
-	                    (if (and (not= nil mouse-event) (= (.getButton mouse-event) MouseEvent/BUTTON1))
-	                        (let [
-		                       transformed-coords (game-utils/transform-coords-in-mouse-event insets mouse-event window-width window-height)
-			               transformed-x (:transformed-x transformed-coords)
-			               transformed-y (:transformed-y transformed-coords)
-		                     ]
-		                     (if (and (>= transformed-x (:left border-coords)) (<= transformed-x (:right border-coords))
-		                              (>= transformed-y (:bottom border-coords)) (<= transformed-y (:top border-coords))
-		                         )
-		                         (find-cell-index transformed-x transformed-y cell-coords)
-			                 (do
-                                           (Thread/sleep 200)
-                                           (recur (.getCurrentMouseEventOnScreen camera))
-	                                 )
-		                     )
-		                 )
-		                 (do
-                                   (Thread/sleep 200)
-                                   (recur (.getCurrentMouseEventOnScreen camera))
-	                         )
-	                    )
-                      )
-       ]
-       (find-cell-fn)
-  )
-)
-
-(defn get-user-move [board camera window-width window-height base-frame border-coords cell-coords]
-  (let [
-         from-cell (get-user-selection camera window-width window-height border-coords cell-coords)
-	 _ (game-utils/gui-show-board board camera base-frame cell-coords [from-cell])
-	 to-cell (get-user-selection camera window-width window-height border-coords cell-coords)
-	 _ (game-utils/gui-show-board board camera base-frame cell-coords [from-cell to-cell])
-       ]
-       {:from-coord [(:column-index from-cell) (:row-index from-cell)] :to-coord [(:column-index to-cell) (:row-index to-cell)]}
-  )
-)
-
 (defn board-to-str [board row-tabulator]
   (loop [
           i 6
@@ -279,7 +219,7 @@
 		     (str row-tabulator (inc i) "  " line-str "|  " (inc i))
 		     (recur
 		       (inc j)
-		       (let [symbol (game-utils/lookup board [j i])]
+		       (let [symbol (game-utils-misc/lookup board [j i])]
 		         (str line-str
 			   (cond (not symbol) "| "
 				 :other		   (str "|" symbol "")
@@ -401,8 +341,8 @@
 )
 
 (defn count-neighbourhood-symbols [board coord radius]
-  (let [center-symbol (game-utils/lookup board coord)]
-       (count (filter #(= (game-utils/lookup board %) center-symbol) (get-neighbourhood board coord radius)))
+  (let [center-symbol (game-utils-misc/lookup board coord)]
+       (count (filter #(= (game-utils-misc/lookup board %) center-symbol) (get-neighbourhood board coord radius)))
   )
 )
 

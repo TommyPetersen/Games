@@ -1,7 +1,7 @@
 (ns games.infection.non-interactive-arbiter
   (:require [clojure.test :refer :all]
             (dk-aia-clojure [definitions :as aia-defs])
-	    (games.infection [infection-utilities :as infection-utils])
+	    (games.infection [infection-utilities-misc :as infection-utils-misc])
     	    [clojure.string :as str]
 	    [clojure.edn :as edn]
   )
@@ -24,7 +24,7 @@
   (let [first-data-element (first (:data unit-input))]
        (case first-data-element
          "init-game"           (do
-	                         (reset! board (infection-utils/init-board "P1" "P2"))
+	                         (reset! board (infection-utils-misc/init-board "P1" "P2"))
 	                         (reset! game-status {})
 	                         {:data ["Ready"]}
                                )
@@ -33,7 +33,7 @@
 				      other-player (if (= player "P1") "P2" "P1")
 	                              move (edn/read-string (nth (:data unit-input) 2))
 				    ]
-				    (if (not (infection-utils/move-valid? @board player move))
+				    (if (not (infection-utils-misc/move-valid? @board player move))
 				        (let [
 					       real-move {
 					                   :from-coord [(inc (first (:from-coord move))) (inc (second (:from-coord move)))]
@@ -45,16 +45,16 @@
 					)
 
 				        (do
-					  (swap! board infection-utils/make-move move)
-                                          (if (or (infection-utils/has-won? @board player)
-					          (infection-utils/has-won? @board other-player)
+					  (swap! board infection-utils-misc/make-move move)
+                                          (if (or (infection-utils-misc/has-won? @board player)
+					          (infection-utils-misc/has-won? @board other-player)
 					      )
 				            (let [
 					           real-move {
 					                       :from-coord [(inc (first (:from-coord move))) (inc (second (:from-coord move)))]
 					  	  	       :to-coord [(inc (first (:to-coord move))) (inc (second (:to-coord move)))]
 							     }
-					           winner (if (infection-utils/has-won? @board player) player other-player)
+					           winner (if (infection-utils-misc/has-won? @board player) player other-player)
 					         ]
 				                 (reset! game-status {:winner winner :move (str player ": " real-move)})
                                                  {:data [(str {:continuation-sign "-" :move (str move)})]}

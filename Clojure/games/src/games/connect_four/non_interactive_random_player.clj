@@ -1,7 +1,7 @@
 (ns games.connect-four.non-interactive-random-player
   (:require [clojure.test :refer :all]
             (dk-aia-clojure [definitions :as aia-defs])
-            (games.connect-four [connect-four-utilities :as connect-four-utils])
+            (games.connect-four [connect-four-utilities-misc :as connect-four-utils-misc])
     	    [clojure.string :as str]
   )
 )
@@ -15,25 +15,25 @@
 
 
 (defn new-board-fn []
-  #(let [_ %] (connect-four-utils/empty-board 7))
+  #(let [_ %] (connect-four-utils-misc/empty-board 7))
 )
 
 (defn update-board-fn [column-number chip]
-  #(connect-four-utils/insert % column-number chip)
+  #(connect-four-utils-misc/insert % column-number chip)
 )
 
 (defn new-player [player-number]
   (let [
-         board (atom (connect-four-utils/empty-board 7))
+         board (atom (connect-four-utils-misc/empty-board 7))
 	 player-chip (if (= player-number 1) "1" "2")
 	 opponent-chip (if (= player-number 1) "2" "1")
          get-move (fn [player-number]
 		      (let [
-			     move-string (str (+ 1 (connect-four-utils/get-random-valid-column @board 6)))
+			     move-string (str (+ 1 (connect-four-utils-misc/get-random-valid-column @board 6)))
 			     j (- (Integer/parseInt move-string) 1)
 			   ]
-			   (if (connect-four-utils/column-valid? @board 7 6 j)
-			     (swap! board connect-four-utils/insert j player-chip)
+			   (if (connect-four-utils-misc/column-valid? @board 7 6 j)
+			     (swap! board connect-four-utils-misc/insert j player-chip)
 			   )
 			   move-string
 		      )
@@ -43,7 +43,7 @@
 		               move-string (nth (:data unit-input) 1)
 			       j (- (Integer/parseInt move-string) 1)
 			     ]
-			     (if (connect-four-utils/column-valid? @board 7 6 j)
+			     (if (connect-four-utils-misc/column-valid? @board 7 6 j)
 			       (swap! board (update-board-fn j opponent-chip))
 			     )
 			)

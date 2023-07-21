@@ -1,18 +1,11 @@
-(ns games.game-utilities
+(ns games.game-utilities-aiamg
+  (:require (games [game-utilities-misc :as game-utils-misc]))
   (:import
 	(java.awt Color)
 	(Aiamg Camera Polygon3D Point3D Line3D)
   )
 )
 
-(defn lookup [board [j i]]
-  (try
-    (nth (nth board j) i)
-    (catch Exception E nil)
-  )
-)
-
-;;; VISUALIZATION ;;;
 (def projection-plane-z 200.0)
 
 (defn new-board-cell [x0 y0 x1 y1 margin-pct cell-color chip-color]
@@ -174,7 +167,7 @@
          (let [
 	        j (:column-index cell-coord)
 		i (:row-index cell-coord)
-		board-symbol (lookup board [j i])
+		board-symbol (game-utils-misc/lookup board [j i])
 		chip-color (if (= board-symbol "*")
 			       Color/white
 			       (if (= board-symbol "¤")

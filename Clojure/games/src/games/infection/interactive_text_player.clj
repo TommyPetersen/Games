@@ -1,6 +1,6 @@
 (ns games.infection.interactive-text-player
   (:require [clojure.test :refer :all]
-	    (games.infection [infection-utilities :as infection-utils])
+	    (games.infection [infection-utilities-misc :as infection-utils-misc])
     	    [clojure.string :as str]
 	    [clojure.edn :as edn]
   )
@@ -16,12 +16,12 @@
 
 (defn new-player [player-number]
   (let [
-         board (atom (infection-utils/init-board "*" "¤"))
+         board (atom (infection-utils-misc/init-board "*" "¤"))
 	 player-chip (if (= player-number 1) "*" "¤")
 	 opponent-chip (if (= player-number 1) "¤" "*")
          get-user-move (fn [player-number]
 	                   (println (str "\n\tYour board player " player-number ":"))
-	                   (println (str "\n" (infection-utils/board-to-str @board "\t\t") "\n"))
+	                   (println (str "\n" (infection-utils-misc/board-to-str @board "\t\t") "\n"))
 	                   (println (str "\tPlayer" player-number ", enter your move: "))
 			   (flush)
 			   (let [
@@ -35,11 +35,11 @@
 				  i1 (- (Integer/parseInt move-string-i1) 1)
 				  move {:from-coord [j0 i0] :to-coord [j1 i1]}
 			        ]
-			        (if (infection-utils/move-valid? @board player-chip move)
-				  (swap! board infection-utils/make-move move)
+			        (if (infection-utils-misc/move-valid? @board player-chip move)
+				  (swap! board infection-utils-misc/make-move move)
 				)
 				(println (str "\n\tYour updated board player " player-number ":"))
-	                        (println (str "\n" (infection-utils/board-to-str @board "\t\t") "\n"))
+	                        (println (str "\n" (infection-utils-misc/board-to-str @board "\t\t") "\n"))
 				(str move)
 			   )
 		       )
@@ -48,8 +48,8 @@
 		                 move-string (nth (:data unit-input) 1)
 				 move (edn/read-string move-string)
 			       ]
-			       (if (infection-utils/move-valid? @board opponent-chip move)
-			         (swap! board infection-utils/make-move move)
+			       (if (infection-utils-misc/move-valid? @board opponent-chip move)
+			         (swap! board infection-utils-misc/make-move move)
 			       )
 			  )
 		      )
@@ -60,7 +60,7 @@
              ]
              (case first-data-element
 	        "init-game"		  (do
-		                            (reset! board (infection-utils/init-board "*" "¤"))
+		                            (reset! board (infection-utils-misc/init-board "*" "¤"))
 					    {:data ["Ok"]}
 					  )
                 "get-first-move"          {:data [(str (get-user-move player-number))]}
@@ -71,7 +71,7 @@
                 "notify-move"             (do
 		                            (update-board unit-input)
 					    (println (str "\n\tYour board player " player-number ":"))
-					    (println (str "\n" (infection-utils/board-to-str @board "\t\t") "\n"))
+					    (println (str "\n" (infection-utils-misc/board-to-str @board "\t\t") "\n"))
 					    {:data ["Accepted"]}
 					  )
              )
