@@ -12,6 +12,7 @@
 )
 
 (def game-initialised (atom false))
+(def stop-fn (atom nil))
 
 (defn init-game [req]
   (let [result (non-interactive-arbiter/arbiter {:data ["init-game"]})]
@@ -63,13 +64,18 @@
   }
 )
 
+(defn stop-server [req]
+  (@stop-fn)
+)
+
 (defroutes app-routes
   (GET "/" [] "This is a non-interactive arbiter for the game \"Connect Four\".")
   (GET "/init-game" [] init-game)
   (GET "/new-move" [] new-move)
   (GET "/get-status" [] get-status)
   (GET "/notify-timeout" [] notify-timeout)
-  
+  (GET "/stop-server" [] stop-server)
+
   (route/not-found "Error, page not found!")
 )
 
@@ -77,7 +83,7 @@
   "Application main entry."
   [& args]
   (let [port (Integer/parseInt (or (System/getenv "PORT") "3000"))]
-       (server/run-server (wrap-defaults #'app-routes site-defaults) {:port port})
+       (reset! stop-fn (server/run-server (wrap-defaults #'app-routes site-defaults) {:port port}))
        (println (str "Running '" (:ns (meta #'-main)) "' as webservice at 'http://127.0.0.1:" port "'"))
   )
 )
