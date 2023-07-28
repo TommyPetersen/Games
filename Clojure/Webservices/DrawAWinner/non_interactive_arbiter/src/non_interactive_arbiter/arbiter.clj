@@ -40,8 +40,8 @@
     )
     {
       :status 409
-      :headers {"Content-Type" "text/plain"}
-      :body "The game has not been initialised!"
+      :headers {"Content-Type" "application/json"}
+      :body (json/write-str {:data ["The game has not been initialised!"]})
     }
   )
 )
