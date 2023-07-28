@@ -19,7 +19,7 @@
     (reset! game-initialised true)
     {
       :status 200
-      :headers {"Content-Type" "text/json"}
+      :headers {"Content-Type" "application/json"}
       :body (json/write-str result)
     }
   )
@@ -34,7 +34,7 @@
          ]
          {
            :status 200
-           :headers {"Content-Type" "text/json"}
+           :headers {"Content-Type" "application/json"}
            :body (json/write-str result)
          }
     )
@@ -50,7 +50,7 @@
   (let [result (non-interactive-arbiter/arbiter {:data ["get-status"]})]
     {
       :status 200
-      :headers {"Content-Type" "text/json"}
+      :headers {"Content-Type" "application/json"}
       :body (json/write-str result)
     }
   )
@@ -59,7 +59,7 @@
 (defn notify-timeout [req]
   {
     :status 200
-    :headers {"Content-Type" "text/json"}
+    :headers {"Content-Type" "application/json"}
     :body (json/write-str {:data ["Oh no, time is up!"]})
   }
 )
