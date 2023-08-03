@@ -112,7 +112,7 @@
   "Application main entry."
   [& args]
   (let [port (Integer/parseInt (or (System/getenv "PORT") "3101"))]
-       (reset! stop-fn (server/run-server (wrap-defaults #'app-routes site-defaults) {:port port}))
+       (reset! stop-fn (server/run-server (wrap-defaults #'app-routes api-defaults) {:port port}))
        (println (str "Running '" (:ns (meta #'-main)) "' as webservice at 'http://127.0.0.1:" port "'"))
   )
 )
