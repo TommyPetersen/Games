@@ -1,0 +1,14 @@
+Description=*** VALUES FOR DRAW A WINNER ***
+MoveValueIllegal=9
+MoveValueFirstLegalP1=1
+MoveValueNextLegalP1=2
+MoveValueInitLegalP2=6
+MoveValueNextLegalP2=5
+Player1=P1
+PortNoArbiter=3200
+PortNoPlayer1=3201
+PortNoPlayer2=3202
+ResponseContentDisqualified=\{:disqualified :.., :illegal-move \\"\d\\"\}
+ResponseContentIllegalMove=\{:continuation-sign \\"\-\\", :move \\"\d\\"\}
+ResponseContentLegalMove=\{:continuation-sign \\"\+\\", :move \\"\d\\"\}
+ResponseContentMoveValue=\d
