@@ -1,9 +1,9 @@
 Description=*** VALUES FOR DRAW A WINNER ***
 MoveValueIllegal=9
-MoveValueFirstLegalP1=1
-MoveValueNextLegalP1=2
-MoveValueInitLegalP2=6
-MoveValueNextLegalP2=5
+MoveValueFirstLegalP1=0
+MoveValueNextLegalP1=1
+MoveValueInitLegalP2=5
+MoveValueNextLegalP2=4
 Player1=P1
 PortNoArbiter=3200
 PortNoPlayer1=3201

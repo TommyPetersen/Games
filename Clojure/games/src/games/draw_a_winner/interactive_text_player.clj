@@ -24,8 +24,8 @@
   (let [first-data-element (first (:data unit-input))]
       (case first-data-element
          "init-game"                {:data ["Ok"]}
-         "get-first-move"           {:data [(str (get-user-move))]}
-         "get-next-move"            {:data [(str (get-user-move))]}
+         "get-first-move"           {:data [(str (- (Integer/parseInt (get-user-move)) 1))]}
+         "get-next-move"            {:data [(str (- (Integer/parseInt (get-user-move)) 1))]}
          "notify-move"              {:data ["Accepted"]}
 
 	 {:data "Error in data"}

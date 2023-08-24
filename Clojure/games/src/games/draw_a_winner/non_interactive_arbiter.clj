@@ -22,18 +22,27 @@
   (let [first-data-element (first (:data unit-input))]
        (case first-data-element
          "init-game"           (do
-	                         (reset! prize-numbers {:P1 (str (+ 1 (rand-int 6))) :P2 (str (+ 1 (rand-int 6)))})
+	                         (reset! prize-numbers {:P1 (str (rand-int 6)) :P2 (str (rand-int 6))})
 	                         (reset! game-status {})
 	                         {:data ["Ready"]}
                                )
-         "new-move"            (let [player (nth (:data unit-input) 1)
-	                             move (nth (:data unit-input) 2)]
-				    (if (= move ((keyword player) @prize-numbers))
+         "new-move"            (let [
+	                              player (nth (:data unit-input) 1)
+	                              move-str (nth (:data unit-input) 2)
+				      move-int (Integer/parseInt move-str)
+				    ]
+				    (if (or (< move-int 0) (> move-int 5))
 				      (do
-				        (reset! game-status {:winner (keyword player) :prize-numbers @prize-numbers})
-                                        {:data [(str {:continuation-sign "-" :move move})]}
-                                      )
-				      {:data [(str {:continuation-sign "+" :move move})]}
+				        (reset! game-status {:disqualified (keyword player) :illegal-move move-str})
+					{:data [(str {:continuation-sign "-" :move move-str})]}
+				      )
+				      (if (= move-str ((keyword player) @prize-numbers))
+				        (do
+				          (reset! game-status {:winner (keyword player) :prize-numbers @prize-numbers})
+                                          {:data [(str {:continuation-sign "-" :move move-str})]}
+                                        )
+				        {:data [(str {:continuation-sign "+" :move move-str})]}
+				      )
 				    )
 			       )
 	 "get-status"          {:data [(str @game-status)]}

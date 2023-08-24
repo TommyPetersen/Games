@@ -19,8 +19,8 @@
   (let [first-data-element (first (:data unit-input))]
        (case first-data-element
          "init-game"                {:data ["Ok"]}
-         "get-first-move"           {:data [(str (+ 1 (rand-int 6)))]}
-         "get-next-move"            {:data [(str (+ 1 (rand-int 6)))]}
+         "get-first-move"           {:data [(str (rand-int 6))]}
+         "get-next-move"            {:data [(str (rand-int 6))]}
          "notify-move"              {:data ["Accepted"]}
 
 	 {:data ["Error in data"]}
