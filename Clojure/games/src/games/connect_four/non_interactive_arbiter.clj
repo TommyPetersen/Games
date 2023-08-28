@@ -25,7 +25,7 @@
          "init-game"           (do
 	                         (reset! board (connect-four-utils-misc/empty-board 7))
 				 (reset! game-status {})
-	                         {:data ["Ready"]}
+	                         {:data ["Ok"]}
                                )
          "new-move"            (let [player (nth (:data unit-input) 1)
 	                             move (Integer/parseInt (nth (:data unit-input) 2))

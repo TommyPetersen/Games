@@ -26,7 +26,7 @@
          "init-game"           (do
 	                         (reset! board (infection-utils-misc/init-board "P1" "P2"))
 	                         (reset! game-status {})
-	                         {:data ["Ready"]}
+	                         {:data ["Ok"]}
                                )
          "new-move"            (let [
 	                              player (nth (:data unit-input) 1)

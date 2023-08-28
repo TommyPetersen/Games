@@ -24,7 +24,7 @@
          "init-game"           (do
 	                         (reset! prize-numbers {:P1 (str (rand-int 6)) :P2 (str (rand-int 6))})
 	                         (reset! game-status {})
-	                         {:data ["Ready"]}
+	                         {:data ["Ok"]}
                                )
          "new-move"            (let [
 	                              player (nth (:data unit-input) 1)
