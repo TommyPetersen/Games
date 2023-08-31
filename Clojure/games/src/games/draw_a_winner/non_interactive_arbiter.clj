@@ -33,12 +33,12 @@
 				    ]
 				    (if (or (< move-int 0) (> move-int 5))
 				      (do
-				        (reset! game-status {:disqualified (keyword player) :illegal-move move-str})
+				        (reset! game-status {:disqualified (keyword player) :illegal-move {:choice move-int :base "zero-based"}})
 					{:data [(str {:continuation-sign "-" :move move-str})]}
 				      )
 				      (if (= move-str ((keyword player) @prize-numbers))
 				        (do
-				          (reset! game-status {:winner (keyword player) :prize-numbers @prize-numbers})
+				          (reset! game-status {:winner (keyword player) :prize {:prize-numbers @prize-numbers :base "zero-based"}})
                                           {:data [(str {:continuation-sign "-" :move move-str})]}
                                         )
 				        {:data [(str {:continuation-sign "+" :move move-str})]}

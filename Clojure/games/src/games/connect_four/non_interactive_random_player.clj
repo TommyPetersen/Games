@@ -28,20 +28,17 @@
 	 player-chip (if (= player-number 1) "1" "2")
 	 opponent-chip (if (= player-number 1) "2" "1")
          get-move (fn [player-number]
-		      (let [
-			     move-string (str (+ 1 (connect-four-utils-misc/get-random-valid-column @board 6)))
-			     j (- (Integer/parseInt move-string) 1)
-			   ]
+		      (let [j (connect-four-utils-misc/get-random-valid-column @board 6)]
 			   (if (connect-four-utils-misc/column-valid? @board 7 6 j)
 			     (swap! board connect-four-utils-misc/insert j player-chip)
 			   )
-			   move-string
+			   (str j)
 		      )
 		  )
 	 update-board (fn [unit-input]
 	                (let [
 		               move-string (nth (:data unit-input) 1)
-			       j (- (Integer/parseInt move-string) 1)
+			       j (Integer/parseInt move-string)
 			     ]
 			     (if (connect-four-utils-misc/column-valid? @board 7 6 j)
 			       (swap! board (update-board-fn j opponent-chip))

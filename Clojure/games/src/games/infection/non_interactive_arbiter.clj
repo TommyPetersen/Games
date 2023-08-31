@@ -34,14 +34,9 @@
 	                              move (edn/read-string (nth (:data unit-input) 2))
 				    ]
 				    (if (not (infection-utils-misc/move-valid? @board player move))
-				        (let [
-					       real-move {
-					                   :from-coord [(inc (first (:from-coord move))) (inc (second (:from-coord move)))]
-							   :to-coord [(inc (first (:to-coord move))) (inc (second (:to-coord move)))]
-							 }
-					     ]
-					     (reset! game-status {:disqualified player :illegal-move (str real-move)})
-				             {:data [(str {:continuation-sign "-" :move (str move)})]}
+				        (do
+					  (reset! game-status {:disqualified (keyword player) :illegal-move {:chosen-move (str move) :base "zero-based"}})
+				          {:data [(str {:continuation-sign "-" :move (str move)})]}
 					)
 
 				        (do
@@ -49,14 +44,8 @@
                                           (if (or (infection-utils-misc/has-won? @board player)
 					          (infection-utils-misc/has-won? @board other-player)
 					      )
-				            (let [
-					           real-move {
-					                       :from-coord [(inc (first (:from-coord move))) (inc (second (:from-coord move)))]
-					  	  	       :to-coord [(inc (first (:to-coord move))) (inc (second (:to-coord move)))]
-							     }
-					           winner (if (infection-utils-misc/has-won? @board player) player other-player)
-					         ]
-				                 (reset! game-status {:winner winner :move (str player ": " real-move)})
+				            (let [winner (if (infection-utils-misc/has-won? @board player) player other-player)]
+				                 (reset! game-status {:winner winner :move {:chosen-move (str player ": " move) :base "zero-based"}})
                                                  {:data [(str {:continuation-sign "-" :move (str move)})]}
                                             )
 				            {:data [(str {:continuation-sign "+" :move (str move)})]}

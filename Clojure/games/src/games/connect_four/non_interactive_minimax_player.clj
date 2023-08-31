@@ -22,21 +22,15 @@
 	 column-distribution [1 4 9 72 9 4 1]
 	 max-ply-depth 5
          get-move (fn [player-number first-move?]
-		      (let [
-			     move-string (str (+ 1 (connect-four-utils-misc/next-move @board max-ply-depth first-move? column-distribution)))
-			     j (- (Integer/parseInt move-string) 1)
-			   ]
+		      (let [j (connect-four-utils-misc/next-move @board max-ply-depth first-move? column-distribution)]
 			   (if (connect-four-utils-misc/column-valid? @board 7 6 j)
 			     (swap! board connect-four-utils-misc/insert j player-chip)
 			   )
-			   move-string
+			   (str j)
 		      )
 		  )
 	 update-board (fn [unit-input]
-	                (let [
-		               move-string (nth (:data unit-input) 1)
-			       j (- (Integer/parseInt move-string) 1)
-			     ]
+	                (let [j (Integer/parseInt (nth (:data unit-input) 1))]
 			     (if (connect-four-utils-misc/column-valid? @board 7 6 j)
 			       (swap! board connect-four-utils-misc/insert j opponent-chip)
 			     )

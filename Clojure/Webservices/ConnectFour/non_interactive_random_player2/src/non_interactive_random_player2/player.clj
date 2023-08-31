@@ -25,25 +25,6 @@
   )
 )
 
-(defn get-first-move [req]
-  (if @game-initialised
-    (let [
-           result (non-interactive-random-player/player2 {:data ["get-first-move"]})
-         ]
-         {
-           :status 200
-           :headers {"Content-Type" "application/json"}
-           :body (json/write-str result)
-         }
-    )
-    {
-      :status 409
-      :headers {"Content-Type" "application/json"}
-      :body (json/write-str {:data ["The game has not been initialised!"]})
-    }
-  )
-)
-
 (defn get-next-move [req]
   (if @game-initialised
     (let [
@@ -99,7 +80,6 @@
 (defroutes app-routes
   (GET "/" [] "This is a non-interactive random player for the game \"Connect Four\".")
   (GET "/init-game" [] init-game)
-  (GET "/get-first-move" [] get-first-move)
   (GET "/get-next-move" [] get-next-move)
   (GET "/notify-move" [] notify-move)
   (GET "/notify-timeout" [] notify-timeout)

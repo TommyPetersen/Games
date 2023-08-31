@@ -1,5 +1,5 @@
 Description=*** VALUES FOR CONNECT FOUR ***
-MoveValueIllegal=9
+MoveValueIllegal=7
 MoveValueFirstLegalP1=3
 MoveValueNextLegalP1=6
 MoveValueInitLegalP2=3
@@ -8,7 +8,7 @@ Player1=P1
 PortNoArbiter=3000
 PortNoPlayer1=3001
 PortNoPlayer2=3002
-ResponseContentDisqualified=\{:disqualified :.., :illegal-move \\"\d\\"\}
+ResponseContentDisqualified=\{:disqualified :.., :illegal-move \{:column-no \d, :base \\"zero-based\\"\}\}
 ResponseContentIllegalMove=\{:continuation-sign \\"\-\\", :move \\"\d\\"\}
 ResponseContentLegalMove=\{:continuation-sign \\"\+\\", :move \\"\d\\"\}
 ResponseContentMoveValue=\d

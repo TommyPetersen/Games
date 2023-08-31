@@ -33,13 +33,13 @@
 				)
 				(println (str "\n\tYour updated board player " player-number ":"))
 	                        (println (str "\n" (connect-four-utils-misc/board-to-str @board 6 "\t\t") "\n"))
-				move-string
+				(str j)
 			   )
 		       )
 	 update-board (fn [unit-input]
 	                  (let [
 		                 move-string (nth (:data unit-input) 1)
-				 j (- (Integer/parseInt move-string) 1)
+				 j (Integer/parseInt move-string)
 			       ]
 			       (if (connect-four-utils-misc/column-valid? @board 7 6 j)
 			         (swap! board connect-four-utils-misc/insert j opponent-chip)

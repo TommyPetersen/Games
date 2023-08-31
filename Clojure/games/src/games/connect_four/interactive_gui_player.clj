@@ -36,13 +36,13 @@
     				    (game-utils-aiamg/gui-show-board @board @camera base-frame cell-coords [{:row-index 5 :column-index j}])
 				  )
 				)
-				(+ j 1)
+				j
 			   )
 		       )
 	 update-board (fn [unit-input]
 	                  (let [
 		                 move-string (nth (:data unit-input) 1)
-				 j (- (Integer/parseInt move-string) 1)
+				 j (Integer/parseInt move-string)
 			       ]
 			       (if (connect-four-utils-misc/column-valid? @board 7 6 j)
 			         (do
