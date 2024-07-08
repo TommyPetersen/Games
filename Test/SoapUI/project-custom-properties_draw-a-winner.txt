@@ -10,5 +10,5 @@ PortNoPlayer1=3201
 PortNoPlayer2=3202
 ResponseContentDisqualified=\{:disqualified :.., :illegal-move \{:choice \d, :base \\"zero-based\\"\}\}
 ResponseContentIllegalMove=\{:continuation-sign \\"\-\\", :move \\"\d\\"\}
-ResponseContentLegalMove=\{:continuation-sign \\"\+\\", :move \\"\d\\"\}
+ResponseContentLegalMove=\{:continuation-sign \\"[\+\-]\\", :move \\"\d\\"\}
 ResponseContentMoveValue=\d
