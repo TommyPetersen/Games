@@ -11,5 +11,6 @@
 		  [org.clojure/data.json "2.4.0"]
 		]
   :main ^:skip-aot non-interactive-player1.player
+  :resource-paths ["resources/Aiamg.jar"]
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})
