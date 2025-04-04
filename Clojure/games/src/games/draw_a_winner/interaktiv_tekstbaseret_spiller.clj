@@ -25,7 +25,7 @@
          "hentNaesteTraek"          {:data [(str (- (Integer/parseInt (get-user-move)) 1))]}
          "meddelTraek"              {:data ["Accepteret"]}
 
-	 {:data "Fejl i data"}
+	 {:data ["Fejl i data"]}
        )
   )
 )

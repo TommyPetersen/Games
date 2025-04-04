@@ -23,7 +23,7 @@
          "hentFoersteTraek"         {:data [(str (rand-int 6))]}
          "meddelTraek"              {:data ["Accepteret"]}
 
-         {:data "Fejl i data"}
+         {:data ["Fejl i data"]}
        )
   )
 )

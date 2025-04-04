@@ -28,7 +28,7 @@
          "get-next-move"            {:data [(str (- (Integer/parseInt (get-user-move)) 1))]}
          "notify-move"              {:data ["Accepted"]}
 
-	 {:data "Error in data"}
+	 {:data ["Error in data"]}
        )
   )
 )
