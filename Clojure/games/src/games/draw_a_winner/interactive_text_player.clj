@@ -1,6 +1,5 @@
 (ns games.draw-a-winner.interactive-text-player
   (:require [clojure.test :refer :all]
-            (dk-aia-clojure [definitions :as aia-defs])
     	    [clojure.string :as str]
   )
 )

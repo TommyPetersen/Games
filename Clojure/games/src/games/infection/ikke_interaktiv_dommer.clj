@@ -1,6 +1,5 @@
 (ns games.infection.ikke-interaktiv-dommer
   (:require [clojure.test :refer :all]
-            (dk-aia-clojure [definitions :as aia-defs])
 	    (games.infection [infection-utilities-misc :as infection-utils-misc])
     	    [clojure.string :as str]
 	    [clojure.edn :as edn]

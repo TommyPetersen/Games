@@ -1,6 +1,5 @@
 (ns games.connect-four.interaktiv-tekstbaseret-spiller
   (:require [clojure.test :refer :all]
-            (dk-aia-clojure [definitions :as aia-defs])
             (games.connect-four [connect-four-utilities-misc :as connect-four-utils-misc])
     	    [clojure.string :as str]
   )

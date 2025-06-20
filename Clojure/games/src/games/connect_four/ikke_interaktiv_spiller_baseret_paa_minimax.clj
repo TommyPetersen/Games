@@ -1,6 +1,5 @@
 (ns games.connect-four.ikke-interaktiv-spiller-baseret-paa-minimax
   (:require [clojure.test :refer :all]
-            (dk-aia-clojure [definitions :as aia-defs])
             (games.connect-four [connect-four-utilities-misc :as connect-four-utils-misc])
     	    [clojure.string :as str]
   )
