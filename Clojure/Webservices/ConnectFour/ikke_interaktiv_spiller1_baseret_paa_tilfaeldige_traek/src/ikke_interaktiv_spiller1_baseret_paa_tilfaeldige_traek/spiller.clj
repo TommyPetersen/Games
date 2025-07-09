@@ -84,7 +84,7 @@
   )
 )
 
-(defn notify-timeout [req]
+(defn meddel-tidsudloeb [req]
   {
     :status 200
     :headers {"Content-Type" "application/json"}
@@ -102,7 +102,7 @@
   (GET "/hentFoersteTraek" [] hent-foerste-traek)
   (GET "/hentNaesteTraek" [] hent-naeste-traek)
   (GET "/meddelTraek" [] meddel-traek)
-  (GET "/notify-timeout" [] notify-timeout)
+  (GET "/meddel-tidsudloeb" [] meddel-tidsudloeb)
   (GET "/stopTjenesten" [] stop-tjenesten)
   
   (route/not-found "Fejl, den anmodede side findes ikke!")
