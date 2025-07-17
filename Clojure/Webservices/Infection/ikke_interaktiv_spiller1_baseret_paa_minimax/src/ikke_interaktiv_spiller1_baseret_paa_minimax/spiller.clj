@@ -102,7 +102,7 @@
   (GET "/hentFoersteTraek" [] hent-foerste-traek)
   (GET "/hentNaesteTraek" [] hent-naeste-traek)
   (GET "/meddelTraek" [] meddel-traek)
-  (GET "/meddel-tidsudloeb" [] meddel-tidsudloeb)
+  (GET "/meddelTidsudloeb" [] meddel-tidsudloeb)
   (GET "/stopTjenesten" [] stop-tjenesten)
   
   (route/not-found "Fejl, den anmodede side findes ikke!")

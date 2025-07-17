@@ -73,7 +73,7 @@
   (GET "/initialiserSpil" [] initialiser-spil)
   (GET "/nytTraek" [] nyt-traek)
   (GET "/hentStatus" [] hent-status)
-  (GET "/meddel-tidsudloeb" [] meddel-tidsudloeb)
+  (GET "/meddelTidsudloeb" [] meddel-tidsudloeb)
   (GET "/stopTjenesten" [] stop-tjenesten)
   
   (route/not-found "Fejl, den anmodede side findes ikke!")
