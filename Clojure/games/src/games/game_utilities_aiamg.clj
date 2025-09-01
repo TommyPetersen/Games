@@ -146,7 +146,48 @@
   )
 )
 
-(defn gui-show-board [board camera base-frame cell-coords selected-cell-coords]
+(defn update-scene-from-cell-coords [board camera cell-coords selected-cell-indexes mouse-over-cell-index]
+  (doseq [cell-coord cell-coords]
+         (let [
+	        cell-index {:row-index (:row-index cell-coord) :column-index (:column-index cell-coord)}
+	        j (:column-index cell-coord)
+		i (:row-index cell-coord)
+		board-symbol (game-utils-misc/lookup board [j i])
+		chip-color (if (= board-symbol "*")
+			       Color/white
+			       (if (= board-symbol "¤")
+				   Color/red
+				   Color/darkGray
+			       )
+			   )
+		filtered-selection (filter #(and (= (:row-index %) i) (= (:column-index %) j)) selected-cell-indexes)
+		selected? (> (count filtered-selection) 0)
+		cell-frame-color (if selected?
+		                   chip-color
+				   (if (= cell-index mouse-over-cell-index)
+				     Color/gray
+				     Color/blue
+				   )
+				 )
+	        cell-left-border (:cell-left-border cell-coord)
+		cell-right-border (:cell-right-border cell-coord)
+		cell-top-border (:cell-top-border cell-coord)
+		cell-bottom-border (:cell-bottom-border cell-coord)
+		board-cell-margin-pct 12
+                board-cell (new-board-cell cell-left-border cell-top-border cell-right-border cell-bottom-border board-cell-margin-pct cell-frame-color chip-color)
+	      ]
+	      (doto camera
+	        (.updateScene (:cell-top board-cell))
+		(.updateScene (:cell-bottom board-cell))
+		(.updateScene (:cell-left board-cell))
+		(.updateScene (:cell-right board-cell))
+		(.updateScene (:cell-chip board-cell))
+	      )
+	 )
+  )
+)
+
+(defn gui-show-board [board camera base-frame cell-coords selected-cell-indexes]
   (let [
          base-frame-left-line (new Line3D (new Point3D (:base-frame-left-border base-frame) (:base-frame-top-border base-frame) projection-plane-z Color/red)
 	                       (new Point3D (:base-frame-left-border base-frame) (:base-frame-bottom-border base-frame) projection-plane-z Color/red))
@@ -163,37 +204,7 @@
 	 (.updateScene base-frame-right-line)
 	 (.updateScene base-frame-bottom-line)
        )
-       (doseq [cell-coord cell-coords]
-         (let [
-	        j (:column-index cell-coord)
-		i (:row-index cell-coord)
-		board-symbol (game-utils-misc/lookup board [j i])
-		chip-color (if (= board-symbol "*")
-			       Color/white
-			       (if (= board-symbol "¤")
-				   Color/red
-				   Color/darkGray
-			       )
-			   )
-		filtered-selection (filter #(and (= (:row-index %) i) (= (:column-index %) j)) selected-cell-coords)
-		selected? (> (count filtered-selection) 0)
-		cell-color (if selected? chip-color Color/blue)
-	        cell-left-border (:cell-left-border cell-coord)
-		cell-right-border (:cell-right-border cell-coord)
-		cell-top-border (:cell-top-border cell-coord)
-		cell-bottom-border (:cell-bottom-border cell-coord)
-		board-cell-margin-pct 12
-                board-cell (new-board-cell cell-left-border cell-top-border cell-right-border cell-bottom-border board-cell-margin-pct cell-color chip-color)
-	      ]
-	      (doto camera
-	        (.updateScene (:cell-top board-cell))
-		(.updateScene (:cell-bottom board-cell))
-		(.updateScene (:cell-left board-cell))
-		(.updateScene (:cell-right board-cell))
-		(.updateScene (:cell-chip board-cell))
-	      )
-	 )
-       )
+       (update-scene-from-cell-coords board camera cell-coords selected-cell-indexes nil)
        (.showScene camera)
   )
 )
