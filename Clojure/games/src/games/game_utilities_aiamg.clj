@@ -8,7 +8,7 @@
 
 (def projection-plane-z 200.0)
 
-(defn new-board-cell [x0 y0 x1 y1 margin-pct cell-color chip-color]
+(defn new-board-cell [x0 y0 x1 y1 margin-pct cell-frame-color chip-color]
   (let [
          x0-d (double x0) ;;; x0 could be like -324N which gives problems in Math/abs.
          x1-d (double x1)
@@ -24,28 +24,28 @@
          y1-i (+ y1 1)
 
          cell-top (doto (new Polygon3D)
-                           (.addPoint (new Point3D x0 y0 projection-plane-z cell-color))
-			   (.addPoint (new Point3D x1 y0 projection-plane-z cell-color))
-			   (.addPoint (new Point3D x1 (- y0 margin-y) projection-plane-z cell-color))
-			   (.addPoint (new Point3D x0 (- y0 margin-y) projection-plane-z cell-color))
+                           (.addPoint (new Point3D x0 y0 projection-plane-z (:top cell-frame-color)))
+			   (.addPoint (new Point3D x1 y0 projection-plane-z (:top cell-frame-color)))
+			   (.addPoint (new Point3D x1 (- y0 margin-y) projection-plane-z (:top cell-frame-color)))
+			   (.addPoint (new Point3D x0 (- y0 margin-y) projection-plane-z (:top cell-frame-color)))
                    )
          cell-bottom (doto (new Polygon3D)
-                           (.addPoint (new Point3D x0 y1 projection-plane-z cell-color))
-			   (.addPoint (new Point3D x1 y1 projection-plane-z cell-color))
-			   (.addPoint (new Point3D x1 (+ y1 margin-y) projection-plane-z cell-color))
-			   (.addPoint (new Point3D x0 (+ y1 margin-y) projection-plane-z cell-color))
+                           (.addPoint (new Point3D x0 y1 projection-plane-z (:bottom cell-frame-color)))
+			   (.addPoint (new Point3D x1 y1 projection-plane-z (:bottom cell-frame-color)))
+			   (.addPoint (new Point3D x1 (+ y1 margin-y) projection-plane-z (:bottom cell-frame-color)))
+			   (.addPoint (new Point3D x0 (+ y1 margin-y) projection-plane-z (:bottom cell-frame-color)))
                      )
          cell-left (doto (new Polygon3D)
-                           (.addPoint (new Point3D x0 (- y0 margin-y) projection-plane-z cell-color))
-			   (.addPoint (new Point3D (+ x0 margin-x) (- y0 margin-y) projection-plane-z cell-color))
-			   (.addPoint (new Point3D (+ x0 margin-x) (+ y1 margin-y) projection-plane-z cell-color))
-			   (.addPoint (new Point3D x0 (+ y1 margin-y) projection-plane-z cell-color))
+                           (.addPoint (new Point3D x0 (- y0 margin-y) projection-plane-z (:left cell-frame-color)))
+			   (.addPoint (new Point3D (+ x0 margin-x) (- y0 margin-y) projection-plane-z (:left cell-frame-color)))
+			   (.addPoint (new Point3D (+ x0 margin-x) (+ y1 margin-y) projection-plane-z (:left cell-frame-color)))
+			   (.addPoint (new Point3D x0 (+ y1 margin-y) projection-plane-z (:left cell-frame-color)))
                      )
          cell-right (doto (new Polygon3D)
-                           (.addPoint (new Point3D (- x1 margin-x) (- y0 margin-y) projection-plane-z cell-color))
-			   (.addPoint (new Point3D x1 (- y0 margin-y) projection-plane-z cell-color))
-			   (.addPoint (new Point3D x1 (+ y1 margin-y) projection-plane-z cell-color))
-			   (.addPoint (new Point3D (- x1 margin-x) (+ y1 margin-y) projection-plane-z cell-color))
+                           (.addPoint (new Point3D (- x1 margin-x) (- y0 margin-y) projection-plane-z (:right cell-frame-color)))
+			   (.addPoint (new Point3D x1 (- y0 margin-y) projection-plane-z (:right cell-frame-color)))
+			   (.addPoint (new Point3D x1 (+ y1 margin-y) projection-plane-z (:right cell-frame-color)))
+			   (.addPoint (new Point3D (- x1 margin-x) (+ y1 margin-y) projection-plane-z (:right cell-frame-color)))
                      )
 	 cell-chip (doto (new Polygon3D)
                            (.addPoint (new Point3D (+ x0 margin-x) (- y0 margin-y) projection-plane-z chip-color))
@@ -107,7 +107,8 @@
 	                                    (if (< j (- board-width 1))
 			                        (recur (+ j 1)
 			                               (+ x0 cell-grid-delta-x cell-grid-column-spacing)
-					               (conj cell-coords-row {:row-index i :cell-top-border y0
+					               (conj cell-coords-row {:row-index i
+						                              :cell-top-border y0
 					                                      :cell-bottom-border (- y0 cell-grid-delta-y)
 				                                              :column-index (+ j 1)
 						  		              :cell-left-border (+ x0 cell-grid-delta-x cell-grid-column-spacing)
@@ -146,7 +147,7 @@
   )
 )
 
-(defn update-scene-from-cell-coords [board camera cell-coords selected-cell-indexes mouse-over-cell-index]
+(defn update-scene-from-cell-coords [board camera cell-coords selected-cell-indexes mouse-over-cell-indexes mouse-over-cell-frame-color]
   (doseq [cell-coord cell-coords]
          (let [
 	        cell-index {:row-index (:row-index cell-coord) :column-index (:column-index cell-coord)}
@@ -160,13 +161,15 @@
 				   Color/darkGray
 			       )
 			   )
-		filtered-selection (filter #(and (= (:row-index %) i) (= (:column-index %) j)) selected-cell-indexes)
-		selected? (> (count filtered-selection) 0)
+		filtered-by-selection (filter #(and (= (:row-index %) i) (= (:column-index %) j)) selected-cell-indexes)
+		selected? (> (count filtered-by-selection) 0)
+		filtered-by-mouse-over (filter #(and (= (:row-index %) i) (= (:column-index %) j)) mouse-over-cell-indexes)
+		mouse-over? (> (count filtered-by-mouse-over) 0)
 		cell-frame-color (if selected?
-		                   chip-color
-				   (if (= cell-index mouse-over-cell-index)
-				     Color/gray
-				     Color/blue
+		                   {:top chip-color :bottom chip-color :left chip-color :right chip-color}
+				   (if mouse-over?
+				     mouse-over-cell-frame-color
+				     {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue}
 				   )
 				 )
 	        cell-left-border (:cell-left-border cell-coord)
@@ -204,7 +207,7 @@
 	 (.updateScene base-frame-right-line)
 	 (.updateScene base-frame-bottom-line)
        )
-       (update-scene-from-cell-coords board camera cell-coords selected-cell-indexes nil)
+       (update-scene-from-cell-coords board camera cell-coords selected-cell-indexes [] nil)
        (.showScene camera)
   )
 )

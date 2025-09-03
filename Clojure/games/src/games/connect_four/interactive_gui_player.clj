@@ -28,7 +28,7 @@
 	 opponent-chip (if (= player-number 1) "¤" "*")
          get-user-move (fn [player-number]
 			   (let [
-			  	  j (connect-four-utils-aiamg/get-user-move @camera window-width window-height border-coords cell-coords)
+			  	  j (connect-four-utils-aiamg/get-user-move @board @camera window-width window-height border-coords cell-coords)
 			        ]
 			        (if (connect-four-utils-misc/column-valid? @board 7 6 j)
 				  (do

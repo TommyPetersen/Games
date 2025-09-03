@@ -1,38 +1,76 @@
 (ns games.connect-four.connect-four-utilities-aiamg
   (:require (games [game-utilities-aiamg :as game-utils-aiamg]))
+  (:import (java.awt Color))
   (:import (java.awt.event MouseEvent))
 )
 
-(defn find-column-number [x cell-coords]
-  (let [pred #(and (>= x (:cell-left-border %)) (< x (:cell-right-border %)))]
-       (:column-index (first (filter pred cell-coords)))
+(defn find-cell-coord [x y cell-coords]
+  (let [
+         pred #(and (>= x (:cell-left-border %)) (< x (:cell-right-border %))
+                    (>= y (:cell-bottom-border %)) (< y (:cell-top-border %)))
+	 cell-coord (first (filter pred cell-coords))
+       ]
+       cell-coord
   )
 )
 
-(defn get-user-move [camera window-width window-height border-coords cell-coords]
+(defn get-user-move [board camera window-width window-height border-coords cell-coords]
   (let [insets (.getInsetsOnScreen camera)]
-       (loop [mouse-event (.getCurrentMouseEventOnScreen camera)]
+       (loop [
+	       stored-cell-coord nil
+	       mouse-event (.getCurrentMouseEventOnScreen camera)
+	       mouse-moved-event (.getCurrentMouseMovedEventOnScreen camera)
+	     ]
+	     (Thread/sleep 1)
 	     (if (and (not= nil mouse-event) (= (.getButton mouse-event) MouseEvent/BUTTON1))
-	         (let [
-		        transformed-coords (game-utils-aiamg/transform-coords-in-mouse-event insets mouse-event window-width window-height)
-			transformed-x (:transformed-x transformed-coords)
-			transformed-y (:transformed-y transformed-coords)
-		      ]
-		      (if (and (>= transformed-x (:left border-coords)) (<= transformed-x (:right border-coords))
-		               (>= transformed-y (:bottom border-coords)) (<= transformed-y (:top border-coords))
-		          )
-			  (find-column-number transformed-x cell-coords)
-			  (do
-                            (Thread/sleep 200)
-                            (recur (.getCurrentMouseEventOnScreen camera))
-	                  )
-		      )
+	         (if (= nil stored-cell-coord)
+                     (recur stored-cell-coord
+	                    (.getCurrentMouseEventOnScreen camera)
+			    (.getCurrentMouseMovedEventOnScreen camera)
+		     )
+	             (:column-index stored-cell-coord)
 		 )
-		 (do
-                   (Thread/sleep 200)
-                   (recur (.getCurrentMouseEventOnScreen camera))
+                 (if (not= nil mouse-moved-event)
+	             (let [
+		            transformed-coords (game-utils-aiamg/transform-coords-in-mouse-event insets mouse-moved-event window-width window-height)
+			    transformed-x (:transformed-x transformed-coords)
+			    transformed-y (:transformed-y transformed-coords)
+		          ]
+		          (if (and (>= transformed-x (:left border-coords)) (<= transformed-x (:right border-coords))
+		                   (>= transformed-y (:bottom border-coords)) (<= transformed-y (:top border-coords))
+		              )
+			    (let [
+			           cell-coord (find-cell-coord transformed-x transformed-y cell-coords)
+				   cell-index {:row-index (:row-index cell-coord) :column-index (:column-index cell-coord)}
+			         ]
+				 (if (or (= cell-coord nil) (= cell-coord stored-cell-coord))
+                                   (recur stored-cell-coord
+				          (.getCurrentMouseEventOnScreen camera)
+				          (.getCurrentMouseMovedEventOnScreen camera)
+			           )
+				   (do
+				     (if (not= nil stored-cell-coord) (game-utils-aiamg/update-scene-from-cell-coords board camera [stored-cell-coord] [] [cell-index] {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue}))
+				     (game-utils-aiamg/update-scene-from-cell-coords board camera [cell-coord] [] [cell-index] {:top Color/blue :bottom Color/blue :left Color/gray :right Color/gray})
+				     (.showScene camera)
+                                     (recur cell-coord
+				            (.getCurrentMouseEventOnScreen camera)
+				            (.getCurrentMouseMovedEventOnScreen camera)
+			             )
+				   )
+	                         )
+			    )
+                            (recur stored-cell-coord
+			           (.getCurrentMouseEventOnScreen camera)
+			           (.getCurrentMouseMovedEventOnScreen camera)
+		            )
+		          )
+		     )
+                     (recur stored-cell-coord
+		            (.getCurrentMouseEventOnScreen camera)
+		            (.getCurrentMouseMovedEventOnScreen camera)
+		     )
 	         )
-	     )
+             )
        )
   )
 )
