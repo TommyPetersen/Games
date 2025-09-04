@@ -14,7 +14,15 @@
   )
 )
 
-(defn get-user-selection [board camera window-width window-height border-coords cell-coords]
+(defn get-user-selection [
+                           board
+			   camera
+			   window-width
+			   window-height
+			   border-coords
+			   cell-coords
+			   already-selected-cell-indexes
+			 ]
   (let [
          insets (.getInsetsOnScreen camera)
 	 find-cell-fn #(loop [
@@ -50,8 +58,8 @@
 					              (.getCurrentMouseMovedEventOnScreen camera)
 					       )
 					       (do
-					         (if (not= nil stored-cell-coord) (game-utils-aiamg/update-scene-from-cell-coords board camera [stored-cell-coord] [] [cell-index] {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue}))
-						 (game-utils-aiamg/update-scene-from-cell-coords board camera [cell-coord] [] [cell-index] {:top Color/gray :bottom Color/gray :left Color/gray :right Color/gray})
+					         (if (not= nil stored-cell-coord) (game-utils-aiamg/update-scene-from-cell-coords board camera [stored-cell-coord] already-selected-cell-indexes [cell-index] {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue}))
+						 (game-utils-aiamg/update-scene-from-cell-coords board camera [cell-coord] already-selected-cell-indexes [cell-index] {:top Color/gray :bottom Color/gray :left Color/gray :right Color/gray})
 						 (.showScene camera)
                                                  (recur cell-coord
 					                (.getCurrentMouseEventOnScreen camera)
@@ -80,9 +88,9 @@
 
 (defn get-user-move [board camera window-width window-height base-frame border-coords cell-coords]
   (let [
-         from-cell (get-user-selection board camera window-width window-height border-coords cell-coords)
+         from-cell (get-user-selection board camera window-width window-height border-coords cell-coords [])
 	 _ (game-utils-aiamg/gui-show-board board camera base-frame cell-coords [from-cell])
-	 to-cell (get-user-selection board camera window-width window-height border-coords cell-coords)
+	 to-cell (get-user-selection board camera window-width window-height border-coords cell-coords [from-cell])
 	 _ (game-utils-aiamg/gui-show-board board camera base-frame cell-coords [from-cell to-cell])
        ]
        {:from-coord [(:column-index from-cell) (:row-index from-cell)] :to-coord [(:column-index to-cell) (:row-index to-cell)]}

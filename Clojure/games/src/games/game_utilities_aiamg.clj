@@ -147,7 +147,14 @@
   )
 )
 
-(defn update-scene-from-cell-coords [board camera cell-coords selected-cell-indexes mouse-over-cell-indexes mouse-over-cell-frame-color]
+(defn update-scene-from-cell-coords [
+                                      board
+                                      camera
+				      cell-coords
+				      selected-cell-indexes
+				      mouse-over-cell-indexes
+				      mouse-over-cell-frame-color
+				    ]
   (doseq [cell-coord cell-coords]
          (let [
 	        cell-index {:row-index (:row-index cell-coord) :column-index (:column-index cell-coord)}
@@ -165,10 +172,10 @@
 		selected? (> (count filtered-by-selection) 0)
 		filtered-by-mouse-over (filter #(and (= (:row-index %) i) (= (:column-index %) j)) mouse-over-cell-indexes)
 		mouse-over? (> (count filtered-by-mouse-over) 0)
-		cell-frame-color (if selected?
-		                   {:top chip-color :bottom chip-color :left chip-color :right chip-color}
-				   (if mouse-over?
-				     mouse-over-cell-frame-color
+		cell-frame-color (if mouse-over?
+		                   mouse-over-cell-frame-color
+				   (if selected?
+				     {:top chip-color :bottom chip-color :left chip-color :right chip-color}
 				     {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue}
 				   )
 				 )
