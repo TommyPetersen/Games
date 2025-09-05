@@ -34,7 +34,7 @@
 			       (println (str "\tIngen mulige traek paa braettet...melder pas"))
 			       (str {:from-coord [-1 -1] :to-coord [-1 -1]})
 			     )
-			     (let [move (infection-utils-aiamg/get-user-move @board @camera window-width window-height base-frame border-coords cell-coords)]
+			     (let [move (infection-utils-aiamg/get-user-move @board @camera window-width window-height base-frame border-coords cell-coords player-chip)]
 			          (if (infection-utils-misc/move-valid? @board player-chip move)
 				    (do
 				      (swap! board infection-utils-misc/make-move move)
