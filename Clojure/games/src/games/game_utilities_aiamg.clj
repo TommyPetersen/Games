@@ -6,7 +6,7 @@
   )
 )
 
-(def projection-plane-z 200.0)
+(def projection-plane-z 100.0)
 
 (defn new-board-cell [x0 y0 x1 y1 margin-pct cell-frame-color chip-color]
   (let [
@@ -82,9 +82,9 @@
 (defn generate-cell-grid-coords [board-width board-height base-frame]
   (let [
          base-frame-left-margin-pct 10
-         base-frame-top-margin-pct 30
+         base-frame-top-margin-pct 10
          base-frame-right-margin-pct 10
-         base-frame-bottom-margin-pct 30
+         base-frame-bottom-margin-pct 10
 	 
          cell-grid-left-border-x (* (:base-frame-left-border base-frame) (/ (- 100 base-frame-left-margin-pct) 100))
          cell-grid-right-border-x (* (:base-frame-right-border base-frame) (/ (- 100 base-frame-right-margin-pct) 100))
@@ -219,16 +219,19 @@
   )
 )
 
-(defn transform-coords-in-mouse-event [insets mouse-event window-width window-height]
+(defn transform-coords-in-mouse-event [camera insets mouse-event window-width window-height]
   (let [
          me-x (.getX mouse-event)
          me-y (.getY mouse-event)
 	 insets-top (.top insets)
 	 insets-left (.left insets)
+	 me-w (+ me-x insets-left)
+	 me-h (- me-y insets-top)
+	 point-in-projection-plane (.getPointInProjectionPlaneFromPointOnScreen camera me-w me-h)
        ]
        {
-         :transformed-x (- (+ me-x insets-left) (/ window-width 2))
-         :transformed-y (- (/ window-height 2) (- me-y insets-top))
+         :transformed-x (.x point-in-projection-plane)
+         :transformed-y (.y point-in-projection-plane)
        }
   )
 )

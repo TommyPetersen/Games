@@ -80,12 +80,12 @@
 			       
 	                       (if (not= nil mouse-moved-event)
 	                         (let [
-		                        transformed-coords (game-utils-aiamg/transform-coords-in-mouse-event insets mouse-moved-event window-width window-height)
+		                        transformed-coords (game-utils-aiamg/transform-coords-in-mouse-event camera insets mouse-moved-event window-width window-height)
 			                transformed-x (:transformed-x transformed-coords)
 			                transformed-y (:transformed-y transformed-coords)
 		                      ]
-		                      (if (and (>= transformed-x (:left border-coords)) (<= transformed-x (:right border-coords))
-		                               (>= transformed-y (:bottom border-coords)) (<= transformed-y (:top border-coords))
+		                      (if (and (>= transformed-x (double (:left border-coords))) (<= transformed-x (double (:right border-coords)))
+		                               (>= transformed-y (double (:bottom border-coords))) (<= transformed-y (double (:top border-coords)))
 		                          )
 				        (let [
 					       cell-coord-in-focus (find-cell-coord transformed-x transformed-y cell-coords)

@@ -20,7 +20,7 @@
   (let [
          camera (atom nil)
 	 window-width 800
-	 window-height 800
+	 window-height 600
 	 base-frame (game-utils-aiamg/calculate-base-frame window-width window-height)
          cell-grid-coords (game-utils-aiamg/generate-cell-grid-coords 7 7 base-frame)
          border-coords (:border-coords cell-grid-coords)
