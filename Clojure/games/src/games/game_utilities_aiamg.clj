@@ -114,7 +114,6 @@
 	 (.updateScene aux-frame-right-line)
 	 (.updateScene aux-frame-bottom-line)
        )
-;;;       (.showScene camera)
   )
 )
 
@@ -158,7 +157,6 @@
 	           (reset! prev-point3d-avail curr-point3d-avail)
               )
        )
-;;;       (.showScene camera)
   )
 )
 
