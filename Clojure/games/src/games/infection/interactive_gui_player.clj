@@ -38,7 +38,7 @@
 			          (if (infection-utils-misc/move-valid? @board player-chip move)
 				    (do
 				      (swap! board infection-utils-misc/make-move move)
-    				      (game-utils-aiamg/gui-show-board @board @camera base-frame cell-coords nil)
+    				      (game-utils-aiamg/gui-show-board @board @camera base-frame border-coords cell-coords nil)
 				    )
 				  )
 				  (str move)
@@ -55,7 +55,7 @@
 			       (if (infection-utils-misc/move-valid? @board opponent-chip move)
 			         (swap! board infection-utils-misc/make-move move)
 			       )
-			       (game-utils-aiamg/gui-show-board @board @camera base-frame cell-coords [from-cell to-cell])
+			       (game-utils-aiamg/gui-show-board @board @camera base-frame border-coords cell-coords [from-cell to-cell])
 			  )
 		      )
        ]
@@ -65,7 +65,7 @@
 	        "init-game"		  (do
 		                            (reset! camera (game-utils-aiamg/new-camera window-width window-height))
 		                            (reset! board (infection-utils-misc/init-board "*" "¤"))
-					    (game-utils-aiamg/gui-show-board @board @camera base-frame cell-coords nil)
+					    (game-utils-aiamg/gui-show-board @board @camera base-frame border-coords cell-coords nil)
 					    {:data ["Ok"]}
 					  )
                 "get-first-move"          {:data [(str (get-user-move player-number))]}

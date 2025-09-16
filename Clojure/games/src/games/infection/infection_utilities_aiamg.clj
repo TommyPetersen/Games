@@ -3,6 +3,7 @@
             (games.infection [infection-utilities-misc :as infection-utils-misc]))
   (:import (java.awt Color))
   (:import (java.awt.event MouseEvent))
+  (:import (java.awt Color)(Aiamg Camera Polygon3D Point3D Line3D))
 )
 
 (defn find-cell-coord [x y cell-coords]
@@ -48,7 +49,8 @@
 				   )
 				   (if (= nil previous-selected-cell-index)
 				     (do
-				       (game-utils-aiamg/gui-show-board board camera base-frame cell-coords [{:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}])
+				       (game-utils-aiamg/gui-show-board board camera base-frame border-coords cell-coords [{:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}])
+				       (.showScene camera)
 				       (recur {:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}
 				              nil
 	                                      (.getCurrentMouseEventOnScreen camera)
@@ -56,14 +58,16 @@
                                        )
 				     )
 				     (do
-				       (game-utils-aiamg/gui-show-board board camera base-frame cell-coords [previous-selected-cell-index {:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}])
+				       (game-utils-aiamg/gui-show-board board camera base-frame border-coords cell-coords [previous-selected-cell-index {:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}])
+				       (.showScene camera)
 				       {:from-cell previous-selected-cell-index :to-cell {:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}}
 				     )
 				   )
 				 )
 				 (if (= (.getButton mouse-event) MouseEvent/BUTTON3)
 				   (do
-				     (game-utils-aiamg/gui-show-board board camera base-frame cell-coords [])
+				     (game-utils-aiamg/gui-show-board board camera base-frame border-coords cell-coords [])
+				     (.showScene camera)
 				     (recur nil
 			                    previous-cell-coord-in-focus
 	                                    (.getCurrentMouseEventOnScreen camera)

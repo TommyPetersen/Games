@@ -74,10 +74,98 @@
   )
 )
 
+(defn calculate-top-aux-frame [
+                                frame-border-left		; I skaermpunkter (pixels)
+				frame-border-right
+				frame-border-top
+				frame-border-bottom
+				
+                                frame-margin-pct-left		; I procent, mellem 0 og 100
+				frame-margin-pct-right
+				frame-margin-pct-top
+				frame-margin-pct-bottom
+                              ]
+  {
+    :frame-x0 (+ frame-border-left (* (- frame-border-right frame-border-left) (/ frame-margin-pct-left 100)))
+    :frame-y0 (+ frame-border-bottom (* (- frame-border-top frame-border-bottom) (/ frame-margin-pct-bottom 100)))
+    :frame-x1 (- frame-border-right (* (- frame-border-right frame-border-left) (/ frame-margin-pct-right 100)))
+    :frame-y1 (- frame-border-top (* (- frame-border-top frame-border-bottom) (/ frame-margin-pct-top 100)))
+  }
+)
+
+(defn show-aux-frame [
+                       camera		; Aiamg.Camera
+                       aux-frame	; {:frame-x0 :frame-y0 :frame-x1 :frame-y1}
+		     ]
+  (let [
+         frame-color Color/gray
+         aux-frame-left-line (new Line3D (new Point3D (:frame-x0 aux-frame) (:frame-y0 aux-frame) projection-plane-z frame-color)
+	                                 (new Point3D (:frame-x0 aux-frame) (:frame-y1 aux-frame) projection-plane-z frame-color))
+	 aux-frame-top-line (new Line3D (new Point3D (:frame-x0 aux-frame) (:frame-y1 aux-frame) projection-plane-z frame-color)
+	                                (new Point3D (:frame-x1 aux-frame) (:frame-y1 aux-frame) projection-plane-z frame-color))
+	 aux-frame-right-line (new Line3D (new Point3D (:frame-x1 aux-frame) (:frame-y0 aux-frame) projection-plane-z frame-color)
+	                                  (new Point3D (:frame-x1 aux-frame) (:frame-y1 aux-frame) projection-plane-z frame-color))
+	 aux-frame-bottom-line (new Line3D (new Point3D (:frame-x0 aux-frame) (:frame-y0 aux-frame) projection-plane-z frame-color)
+	                                   (new Point3D (:frame-x1 aux-frame) (:frame-y0 aux-frame) projection-plane-z frame-color))
+       ]
+       (doto camera
+	 (.updateScene aux-frame-left-line)
+         (.updateScene aux-frame-top-line)
+	 (.updateScene aux-frame-right-line)
+	 (.updateScene aux-frame-bottom-line)
+       )
+;;;       (.showScene camera)
+  )
+)
+
+(defn show-graphs [
+                    camera			; Aiamg.Camera
+                    datapoints			; [{keyword("*", "¤") count}]
+		    max-no-datapoints-shown	; Heltal
+		    graph-frame-x0		; Grafernes origo-x
+		    graph-frame-y0		; Grafernes origo-y
+    		    graph-frame-x1		; Grafernes hoejre graense
+		    graph-frame-y1		; Grafernes øvre graense
+                  ]
+  (let [
+	 y-value-fn #(+ graph-frame-y0 (* % (- graph-frame-y1 graph-frame-y0)))
+         color1 Color/white
+	 color2 Color/red
+	 color-avail Color/darkGray
+	 prev-point3d-pl1 (atom (new Point3D graph-frame-x0 (y-value-fn (/ ((keyword "*") (first datapoints)) 49)) projection-plane-z color1))
+	 prev-point3d-pl2 (atom (new Point3D graph-frame-x0 (y-value-fn (/ ((keyword "¤") (first datapoints)) 49)) projection-plane-z color2))
+	 prev-point3d-avail (atom (new Point3D graph-frame-x0 (y-value-fn (/ (- 49 (+ ((keyword "*") (first datapoints)) ((keyword "¤") (first datapoints)))) 49)) projection-plane-z color-avail))
+	 delta-x (/ (- graph-frame-x1 graph-frame-x0) (- max-no-datapoints-shown 1))
+       ]
+       (doseq [
+                datapoint (vec (rest datapoints))
+	      ]
+              (let [
+	             curr-point3d-pl1 (new Point3D (+ (.x @prev-point3d-pl1) delta-x) (y-value-fn (/ ((keyword "*") datapoint) 49)) projection-plane-z color1)
+                     line3d-pl1 (new Line3D @prev-point3d-pl1 curr-point3d-pl1)
+	             curr-point3d-pl2 (new Point3D (+ (.x @prev-point3d-pl2) delta-x) (y-value-fn (/ ((keyword "¤") datapoint) 49)) projection-plane-z color2)
+                     line3d-pl2 (new Line3D @prev-point3d-pl2 curr-point3d-pl2)
+	             curr-point3d-avail (new Point3D (+ (.x @prev-point3d-pl2) delta-x) (y-value-fn (/ (- 49 (+ ((keyword "*") datapoint) ((keyword "¤") datapoint))) 49)) projection-plane-z color-avail)
+                     line3d-avail (new Line3D @prev-point3d-avail curr-point3d-avail)
+                   ]
+                   (doto camera
+	             (.updateScene line3d-pl1)
+	             (.updateScene line3d-pl2)
+	             (.updateScene line3d-avail)
+                   )
+	           (reset! prev-point3d-pl1 curr-point3d-pl1)
+	           (reset! prev-point3d-pl2 curr-point3d-pl2)
+	           (reset! prev-point3d-avail curr-point3d-avail)
+              )
+       )
+;;;       (.showScene camera)
+  )
+)
+
 (defn generate-cell-grid-coords [board-width board-height base-frame]
   (let [
          base-frame-left-margin-pct 10
-         base-frame-top-margin-pct 10
+         base-frame-top-margin-pct 30
          base-frame-right-margin-pct 10
          base-frame-bottom-margin-pct 10
 	 
@@ -198,7 +286,7 @@
   )
 )
 
-(defn gui-show-board [board camera base-frame cell-coords selected-cell-indexes]
+(defn gui-show-board [board camera base-frame border-coords cell-coords selected-cell-indexes]
   (let [
          base-frame-left-line (new Line3D (new Point3D (:base-frame-left-border base-frame) (:base-frame-top-border base-frame) projection-plane-z Color/red)
 	                       (new Point3D (:base-frame-left-border base-frame) (:base-frame-bottom-border base-frame) projection-plane-z Color/red))
@@ -208,15 +296,28 @@
 	                        (new Point3D (:base-frame-right-border base-frame) (:base-frame-bottom-border base-frame) projection-plane-z Color/red))
 	 base-frame-bottom-line (new Line3D (new Point3D (:base-frame-right-border base-frame) (:base-frame-bottom-border base-frame) projection-plane-z Color/red)
 	                         (new Point3D (:base-frame-left-border base-frame) (:base-frame-bottom-border base-frame) projection-plane-z Color/red))
+
+         cell-frame-left-line (new Line3D (new Point3D (- (:left border-coords) 0) (+ (:top border-coords) 1) projection-plane-z Color/gray)
+	                                  (new Point3D (- (:left border-coords) 0) (- (:bottom border-coords) 0) projection-plane-z Color/gray))
+	 cell-frame-top-line (new Line3D (new Point3D (- (:left border-coords) 0) (+ (:top border-coords) 1) projection-plane-z Color/gray)
+	                                 (new Point3D (+ (:right border-coords) 1) (+ (:top border-coords) 1) projection-plane-z Color/gray))
+	 cell-frame-right-line (new Line3D (new Point3D (+ (:right border-coords) 1) (+ (:top border-coords) 1) projection-plane-z Color/gray)
+	                                   (new Point3D (+ (:right border-coords) 1) (- (:bottom border-coords) 0) projection-plane-z Color/gray))
+	 cell-frame-bottom-line (new Line3D (new Point3D (+ (:right border-coords) 1) (- (:bottom border-coords) 0) projection-plane-z Color/gray)
+	                                    (new Point3D (- (:left border-coords) 0) (- (:bottom border-coords) 0) projection-plane-z Color/gray))
        ]
        (doto camera
 	 (.updateScene base-frame-left-line)
          (.updateScene base-frame-top-line)
 	 (.updateScene base-frame-right-line)
 	 (.updateScene base-frame-bottom-line)
+	 (.updateScene cell-frame-left-line)
+	 (.updateScene cell-frame-top-line)
+	 (.updateScene cell-frame-right-line)
+	 (.updateScene cell-frame-bottom-line)
        )
        (update-scene-from-cell-coords board camera cell-coords selected-cell-indexes [] nil)
-       (.showScene camera)
+;       (.showScene camera)
   )
 )
 

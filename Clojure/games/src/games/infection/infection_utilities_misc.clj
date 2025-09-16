@@ -178,6 +178,29 @@
   (count (get-all-coords-with-given-symbol board symbol))
 )
 
+(defn count-symbols-in-board [
+                               board
+		               symbol-str1
+		               symbol-str2
+		             ]
+  {
+    (keyword symbol-str1) (count-symbol board symbol-str1)
+    (keyword symbol-str2) (count-symbol board symbol-str2)
+  }
+)
+
+(defn count-symbols-in-boards [
+                                boards 
+		                symbol-str1
+				symbol-str2
+			      ]
+  (let [
+         partial-symbol-count #(count-symbols-in-board % symbol-str1 symbol-str2)
+       ]
+       (vec (map partial-symbol-count boards))
+  )
+)
+
 (defn is-full? [board]
   (every? #(not= % nil) (apply concat board))
 )
@@ -233,6 +256,14 @@
 	    )
 	  )
         )
+  )
+)
+
+(defn boards-to-str [boards row-tabulator]
+  (let [
+         partial-board-to-str #(board-to-str % row-tabulator)
+       ]
+       (vec (map partial-board-to-str boards))
   )
 )
 

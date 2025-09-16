@@ -33,7 +33,8 @@
 			        (if (connect-four-utils-misc/column-valid? @board 7 6 j)
 				  (do
 				    (swap! board connect-four-utils-misc/insert j player-chip)
-    				    (game-utils-aiamg/gui-show-board @board @camera base-frame cell-coords [{:row-index 5 :column-index j}])
+    				    (game-utils-aiamg/gui-show-board @board @camera base-frame border-coords cell-coords [{:row-index 5 :column-index j}])
+				    (.showScene @camera)
 				  )
 				)
 				j
@@ -49,7 +50,8 @@
 				   (swap! board connect-four-utils-misc/insert j opponent-chip)
 				 )
 			       )
-    			       (game-utils-aiamg/gui-show-board @board @camera base-frame cell-coords [{:row-index 5 :column-index j}])
+    			       (game-utils-aiamg/gui-show-board @board @camera base-frame border-coords cell-coords [{:row-index 5 :column-index j}])
+			       (.showScene @camera)
 			  )
 		      )
        ]
@@ -59,7 +61,8 @@
 	        "initialiserSpil"	  (do
 		                            (reset! camera (game-utils-aiamg/new-camera window-width window-height))
 		                            (reset! board (connect-four-utils-misc/empty-board 7))
-					    (game-utils-aiamg/gui-show-board @board @camera base-frame cell-coords nil)
+					    (game-utils-aiamg/gui-show-board @board @camera base-frame border-coords cell-coords nil)
+					    (.showScene @camera)
 					    {:data ["Ok"]}
 					  )
                 "hentFoersteTraek"          {:data [(str (get-user-move player-number))]}
