@@ -25,7 +25,8 @@
 	                  base-frame	; Til at tegne en kant udenom spilomraadet i klient-skaermen
 	                  border-coords	; Spilomraadets graenser i klient-skaermen
 	                  cell-coords	; Braettets celler udtrykt ved skaermkoordinater
-	                  player-chip	; Spillerens brik udtrykt som tegnsymbol			   
+	                  player-chip	; Spillerens brik udtrykt som tegnsymbol
+			  sync-lock	; Clojure-lock som bruges til grafiksynkronisering
             		]
   (let [
          valid-move-seq (infection-utils-misc/valid-move-seq board player-chip)
@@ -49,8 +50,14 @@
 				   )
 				   (if (= nil previous-selected-cell-index)
 				     (do
-				       (game-utils-aiamg/gui-show-board board camera base-frame border-coords cell-coords [{:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}])
-				       (.showScene camera)
+				       (.lock sync-lock)
+				       (try
+				         (game-utils-aiamg/gui-show-board board camera base-frame border-coords cell-coords [{:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}])
+				         (.showScene camera)
+				         (finally
+				           (.unlock sync-lock)
+				         )
+				       )
 				       (recur {:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}
 				              nil
 	                                      (.getCurrentMouseEventOnScreen camera)
@@ -58,16 +65,28 @@
                                        )
 				     )
 				     (do
-				       (game-utils-aiamg/gui-show-board board camera base-frame border-coords cell-coords [previous-selected-cell-index {:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}])
-				       (.showScene camera)
+				       (.lock sync-lock)
+				       (try
+				         (game-utils-aiamg/gui-show-board board camera base-frame border-coords cell-coords [previous-selected-cell-index {:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}])
+				         (.showScene camera)
+				         (finally
+				           (.unlock sync-lock)
+				         )
+				       )
 				       {:from-cell previous-selected-cell-index :to-cell {:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}}
 				     )
 				   )
 				 )
 				 (if (= (.getButton mouse-event) MouseEvent/BUTTON3)
 				   (do
-				     (game-utils-aiamg/gui-show-board board camera base-frame border-coords cell-coords [])
-				     (.showScene camera)
+				     (.lock sync-lock)
+				     (try
+				       (game-utils-aiamg/gui-show-board board camera base-frame border-coords cell-coords [])
+				       (.showScene camera)
+				       (finally
+				         (.unlock sync-lock)
+				       )
+				     )
 				     (recur nil
 			                    previous-cell-coord-in-focus
 	                                    (.getCurrentMouseEventOnScreen camera)
@@ -117,8 +136,14 @@
 					       (do
 					         (if (not= nil previous-cell-coord-in-focus)
 						   (do
-						     (game-utils-aiamg/update-scene-from-cell-coords board camera [previous-cell-coord-in-focus] [previous-selected-cell-index] [cell-index-in-focus] {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue})
-						     (.showScene camera)
+						     (.lock sync-lock)
+						     (try
+						       (game-utils-aiamg/update-scene-from-cell-coords board camera [previous-cell-coord-in-focus] [previous-selected-cell-index] [cell-index-in-focus] {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue})
+						       (.showScene camera)
+						       (finally
+				                         (.unlock sync-lock)
+				                       )
+						     )
 						   )
 						 )
                                                  (recur previous-selected-cell-index
@@ -134,9 +159,15 @@
 					                (.getCurrentMouseMovedEventOnScreen camera)
 					         )
 					         (do
-					           (if (not= nil previous-cell-coord-in-focus) (game-utils-aiamg/update-scene-from-cell-coords board camera [previous-cell-coord-in-focus] [previous-selected-cell-index] [cell-index-in-focus] {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue}))
-						   (game-utils-aiamg/update-scene-from-cell-coords board camera [cell-coord-in-focus] [previous-selected-cell-index] [cell-index-in-focus] {:top Color/gray :bottom Color/gray :left Color/gray :right Color/gray})
-						   (.showScene camera)
+						   (.lock sync-lock)
+						   (try
+					             (if (not= nil previous-cell-coord-in-focus)(game-utils-aiamg/update-scene-from-cell-coords board camera [previous-cell-coord-in-focus] [previous-selected-cell-index] [cell-index-in-focus] {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue}))
+						     (game-utils-aiamg/update-scene-from-cell-coords board camera [cell-coord-in-focus] [previous-selected-cell-index] [cell-index-in-focus] {:top Color/gray :bottom Color/gray :left Color/gray :right Color/gray})
+						     (.showScene camera)
+				                     (finally
+				                       (.unlock sync-lock)
+				                     )
+					           )
                                                    (recur previous-selected-cell-index
 						          cell-coord-in-focus
 					                  (.getCurrentMouseEventOnScreen camera)
@@ -149,8 +180,14 @@
 					(do
 					  (if (not= nil previous-cell-coord-in-focus)
 					    (do
-					      (game-utils-aiamg/update-scene-from-cell-coords board camera [previous-cell-coord-in-focus] [previous-selected-cell-index] [{:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}] {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue})
-					      (.showScene camera)
+					      (.lock sync-lock)
+					      (try
+					        (game-utils-aiamg/update-scene-from-cell-coords board camera [previous-cell-coord-in-focus] [previous-selected-cell-index] [{:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}] {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue})
+					        (.showScene camera)
+				                (finally
+				                  (.unlock sync-lock)
+				                )
+					      )
 					    )
 					  )
                                           (recur previous-selected-cell-index
@@ -184,9 +221,10 @@
 		      border-coords
 		      cell-coords
 		      player-chip
+		      sync-lock
 		    ]
   (let [
-         selected-move (get-user-selection board camera window-width window-height base-frame border-coords cell-coords player-chip)
+         selected-move (get-user-selection board camera window-width window-height base-frame border-coords cell-coords player-chip sync-lock)
        ]
        {
          :from-coord [(:column-index (:from-cell selected-move)) (:row-index (:from-cell selected-move))]

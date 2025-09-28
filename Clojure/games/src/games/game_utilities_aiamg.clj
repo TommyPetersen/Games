@@ -74,17 +74,17 @@
   )
 )
 
-(defn calculate-top-aux-frame [
-                                frame-border-left		; I skaermpunkter (pixels)
-				frame-border-right
-				frame-border-top
-				frame-border-bottom
+(defn calculate-aux-frame [
+                            frame-border-left		; I skaermpunkter (pixels)
+			    frame-border-right
+			    frame-border-top
+			    frame-border-bottom
 				
-                                frame-margin-pct-left		; I procent, mellem 0 og 100
-				frame-margin-pct-right
-				frame-margin-pct-top
-				frame-margin-pct-bottom
-                              ]
+                            frame-margin-pct-left	; I procent, mellem 0 og 100
+			    frame-margin-pct-right
+			    frame-margin-pct-top
+			    frame-margin-pct-bottom
+                          ]
   {
     :frame-x0 (+ frame-border-left (* (- frame-border-right frame-border-left) (/ frame-margin-pct-left 100)))
     :frame-y0 (+ frame-border-bottom (* (- frame-border-top frame-border-bottom) (/ frame-margin-pct-bottom 100)))
@@ -120,11 +120,11 @@
 (defn show-graphs [
                     camera			; Aiamg.Camera
                     datapoints			; [{keyword("*", "¤") count}]
-		    max-no-datapoints-shown	; Heltal
-		    graph-frame-x0		; Grafernes origo-x
-		    graph-frame-y0		; Grafernes origo-y
-    		    graph-frame-x1		; Grafernes hoejre graense
-		    graph-frame-y1		; Grafernes øvre graense
+		    max-no-datapoints-shown	; Integer
+		    graph-frame-x0		; Graf frame's origo-x
+		    graph-frame-y0		; Graf frame's origo-y
+    		    graph-frame-x1		; Graf frame's right limit
+		    graph-frame-y1		; Graf frame's top limit
                   ]
   (let [
 	 y-value-fn #(+ graph-frame-y0 (* % (- graph-frame-y1 graph-frame-y0)))
@@ -160,7 +160,38 @@
   )
 )
 
-(defn generate-cell-grid-coords [board-width board-height base-frame]
+(defn show-countdown [
+                       camera			; Aiamg.Camera
+		       chip-symbol		; Player1: "*", Player2: "¤"
+		       total-time-used		; The total time used
+		       time-limit		; The time limit
+		       countdown-frame-x0	; Countdown frame's origo-x
+		       countdown-frame-y0	; Countdown frame's origo-y
+    		       countdown-frame-x1	; Countdown frame's right limit
+		       countdown-frame-y1	; Countdown frame's top limit
+                     ]
+  (let [
+	 chip-color (if (= chip-symbol "*") Color/white Color/red)
+         fraction (/ total-time-used time-limit)
+	 yr (+ (* countdown-frame-y1 (- 1 fraction)) (* countdown-frame-y0 fraction))
+	 chip-polygon (doto (new Polygon3D)
+                            (.addPoint (new Point3D countdown-frame-x0 countdown-frame-y0 projection-plane-z chip-color))
+                            (.addPoint (new Point3D countdown-frame-x1 countdown-frame-y0 projection-plane-z chip-color))
+                            (.addPoint (new Point3D countdown-frame-x1 (- yr 1) projection-plane-z chip-color))
+                            (.addPoint (new Point3D countdown-frame-x0 (- yr 1) projection-plane-z chip-color))
+                      )
+       ]
+       (doto camera
+	 (.updateScene chip-polygon)
+       )
+  )
+)
+
+(defn generate-cell-grid-coords [
+                                  board-width
+				  board-height
+				  base-frame
+				]
   (let [
          base-frame-left-margin-pct 10
          base-frame-top-margin-pct 30
@@ -315,7 +346,6 @@
 	 (.updateScene cell-frame-bottom-line)
        )
        (update-scene-from-cell-coords board camera cell-coords selected-cell-indexes [] nil)
-;       (.showScene camera)
   )
 )
 
