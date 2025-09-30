@@ -117,49 +117,6 @@
   )
 )
 
-(defn show-graphs [
-                    camera			; Aiamg.Camera
-                    datapoints			; [{keyword("*", "¤") count}]
-		    max-no-datapoints-shown	; Integer
-		    graph-frame-x0		; Graf frame's origo-x
-		    graph-frame-y0		; Graf frame's origo-y
-    		    graph-frame-x1		; Graf frame's right limit
-		    graph-frame-y1		; Graf frame's top limit
-                  ]
-  (let [
-	 y-value-fn #(+ graph-frame-y0 (* % (- graph-frame-y1 graph-frame-y0)))
-         color1 Color/white
-	 color2 Color/red
-	 color-avail Color/darkGray
-	 prev-point3d-pl1 (atom (new Point3D graph-frame-x0 (y-value-fn (/ ((keyword "*") (first datapoints)) 49)) projection-plane-z color1))
-	 prev-point3d-pl2 (atom (new Point3D graph-frame-x0 (y-value-fn (/ ((keyword "¤") (first datapoints)) 49)) projection-plane-z color2))
-	 prev-point3d-avail (atom (new Point3D graph-frame-x0 (y-value-fn (/ (- 49 (+ ((keyword "*") (first datapoints)) ((keyword "¤") (first datapoints)))) 49)) projection-plane-z color-avail))
-	 delta-x (/ (- graph-frame-x1 graph-frame-x0) (- max-no-datapoints-shown 1))
-       ]
-       (doseq [
-                datapoint (vec (rest datapoints))
-	      ]
-              (let [
-	             curr-point3d-pl1 (new Point3D (+ (.x @prev-point3d-pl1) delta-x) (y-value-fn (/ ((keyword "*") datapoint) 49)) projection-plane-z color1)
-                     line3d-pl1 (new Line3D @prev-point3d-pl1 curr-point3d-pl1)
-	             curr-point3d-pl2 (new Point3D (+ (.x @prev-point3d-pl2) delta-x) (y-value-fn (/ ((keyword "¤") datapoint) 49)) projection-plane-z color2)
-                     line3d-pl2 (new Line3D @prev-point3d-pl2 curr-point3d-pl2)
-	             curr-point3d-avail (new Point3D (+ (.x @prev-point3d-pl2) delta-x) (y-value-fn (/ (- 49 (+ ((keyword "*") datapoint) ((keyword "¤") datapoint))) 49)) projection-plane-z color-avail)
-                     line3d-avail (new Line3D @prev-point3d-avail curr-point3d-avail)
-                   ]
-                   (doto camera
-	             (.updateScene line3d-pl1)
-	             (.updateScene line3d-pl2)
-	             (.updateScene line3d-avail)
-                   )
-	           (reset! prev-point3d-pl1 curr-point3d-pl1)
-	           (reset! prev-point3d-pl2 curr-point3d-pl2)
-	           (reset! prev-point3d-avail curr-point3d-avail)
-              )
-       )
-  )
-)
-
 (defn show-countdown [
                        camera			; Aiamg.Camera
 		       chip-symbol		; Player1: "*", Player2: "¤"
@@ -290,10 +247,10 @@
 		selected? (> (count filtered-by-selection) 0)
 		filtered-by-mouse-over (filter #(and (= (:row-index %) i) (= (:column-index %) j)) mouse-over-cell-indexes)
 		mouse-over? (> (count filtered-by-mouse-over) 0)
-		cell-frame-color (if mouse-over?
-		                   mouse-over-cell-frame-color
-				   (if selected?
-				     {:top chip-color :bottom chip-color :left chip-color :right chip-color}
+		cell-frame-color (if selected?
+				   {:top chip-color :bottom chip-color :left chip-color :right chip-color}
+				   (if mouse-over?
+				     mouse-over-cell-frame-color
 				     {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue}
 				   )
 				 )

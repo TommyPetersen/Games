@@ -6,6 +6,49 @@
   (:import (java.awt Color)(Aiamg Camera Polygon3D Point3D Line3D))
 )
 
+(defn show-graphs [
+                    camera			; Aiamg.Camera
+                    datapoints			; [{keyword("*", "¤") count}]
+		    max-no-datapoints-shown	; Integer
+		    graph-frame-x0		; Graf frame's origo-x
+		    graph-frame-y0		; Graf frame's origo-y
+    		    graph-frame-x1		; Graf frame's right limit
+		    graph-frame-y1		; Graf frame's top limit
+                  ]
+  (let [
+	 y-value-fn #(+ graph-frame-y0 (* % (- graph-frame-y1 graph-frame-y0)))
+         color1 Color/white
+	 color2 Color/red
+	 color-avail Color/darkGray
+	 prev-point3d-pl1 (atom (new Point3D graph-frame-x0 (y-value-fn (/ ((keyword "*") (first datapoints)) 49)) game-utils-aiamg/projection-plane-z color1))
+	 prev-point3d-pl2 (atom (new Point3D graph-frame-x0 (y-value-fn (/ ((keyword "¤") (first datapoints)) 49)) game-utils-aiamg/projection-plane-z color2))
+	 prev-point3d-avail (atom (new Point3D graph-frame-x0 (y-value-fn (/ (- 49 (+ ((keyword "*") (first datapoints)) ((keyword "¤") (first datapoints)))) 49)) game-utils-aiamg/projection-plane-z color-avail))
+	 delta-x (/ (- graph-frame-x1 graph-frame-x0) (- max-no-datapoints-shown 1))
+       ]
+       (doseq [
+                datapoint (vec (rest datapoints))
+	      ]
+              (let [
+	             curr-point3d-pl1 (new Point3D (+ (.x @prev-point3d-pl1) delta-x) (y-value-fn (/ ((keyword "*") datapoint) 49)) game-utils-aiamg/projection-plane-z color1)
+                     line3d-pl1 (new Line3D @prev-point3d-pl1 curr-point3d-pl1)
+	             curr-point3d-pl2 (new Point3D (+ (.x @prev-point3d-pl2) delta-x) (y-value-fn (/ ((keyword "¤") datapoint) 49)) game-utils-aiamg/projection-plane-z color2)
+                     line3d-pl2 (new Line3D @prev-point3d-pl2 curr-point3d-pl2)
+	             curr-point3d-avail (new Point3D (+ (.x @prev-point3d-pl2) delta-x) (y-value-fn (/ (- 49 (+ ((keyword "*") datapoint) ((keyword "¤") datapoint))) 49)) game-utils-aiamg/projection-plane-z color-avail)
+                     line3d-avail (new Line3D @prev-point3d-avail curr-point3d-avail)
+                   ]
+                   (doto camera
+	             (.updateScene line3d-pl1)
+	             (.updateScene line3d-pl2)
+	             (.updateScene line3d-avail)
+                   )
+	           (reset! prev-point3d-pl1 curr-point3d-pl1)
+	           (reset! prev-point3d-pl2 curr-point3d-pl2)
+	           (reset! prev-point3d-avail curr-point3d-avail)
+              )
+       )
+  )
+)
+
 (defn find-cell-coord [x y cell-coords]
   (let [
          pred #(and (>= x (:cell-left-border %)) (< x (:cell-right-border %))
@@ -18,15 +61,18 @@
 
 (defn get-user-selection ; {:from-cell from-cell :to-cell to-cell}
             		[
-      	                  board		; vec[kolonne-indeks 0...6][raekke-indeks 0...6]
-	                  camera	; Aiamg.Camera
-	                  window-width	; Klient-skaermens bredde i skaermpunkter, heltal stoerre end 0
-	                  window-height	; Klient-skaermens hoejde i skaermpunkter, heltal stoerre end 0
-	                  base-frame	; Til at tegne en kant udenom spilomraadet i klient-skaermen
-	                  border-coords	; Spilomraadets graenser i klient-skaermen
-	                  cell-coords	; Braettets celler udtrykt ved skaermkoordinater
-	                  player-chip	; Spillerens brik udtrykt som tegnsymbol
-			  sync-lock	; Clojure-lock som bruges til grafiksynkronisering
+      	                  board				; vec[kolonne-indeks 0...6][raekke-indeks 0...6]
+	                  camera	  		; Aiamg.Camera
+	                  window-width			; Klient-skaermens bredde i skaermpunkter, heltal stoerre end 0
+	                  window-height	  		; Klient-skaermens hoejde i skaermpunkter, heltal stoerre end 0
+	                  base-frame	  		; Til at tegne en kant udenom spilomraadet i klient-skaermen
+	                  border-coords	      	       	; Spilomraadets graenser i klient-skaermen
+	                  cell-coords	  		; Braettets celler udtrykt ved skaermkoordinater
+	                  player-chip			; Spillerens brik udtrykt som tegnsymbol
+			  sync-lock	  	     	; Clojure-lock som bruges til grafiksynkronisering
+			  selected-cell-indexes      	; Atom til at kommunikere de valgte celler
+			  mouse-over-cell-indexes	; Atom til at kommunikere de fokuserede celler
+			  mouse-over-cell-frame-color   ; Atom til at kommunikere rammefarven paa de fokuserede celler
             		]
   (let [
          valid-move-seq (infection-utils-misc/valid-move-seq board player-chip)
@@ -52,7 +98,8 @@
 				     (do
 				       (.lock sync-lock)
 				       (try
-				         (game-utils-aiamg/gui-show-board board camera base-frame border-coords cell-coords [{:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}])
+				         (reset! selected-cell-indexes [{:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}])
+				         (game-utils-aiamg/gui-show-board board camera base-frame border-coords cell-coords @selected-cell-indexes)
 				         (.showScene camera)
 				         (finally
 				           (.unlock sync-lock)
@@ -67,7 +114,10 @@
 				     (do
 				       (.lock sync-lock)
 				       (try
-				         (game-utils-aiamg/gui-show-board board camera base-frame border-coords cell-coords [previous-selected-cell-index {:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}])
+				         (reset! mouse-over-cell-indexes nil)
+					 (reset! mouse-over-cell-frame-color nil)
+				         (reset! selected-cell-indexes [previous-selected-cell-index {:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}])
+				         (game-utils-aiamg/gui-show-board board camera base-frame border-coords cell-coords @selected-cell-indexes)
 				         (.showScene camera)
 				         (finally
 				           (.unlock sync-lock)
@@ -81,7 +131,10 @@
 				   (do
 				     (.lock sync-lock)
 				     (try
-				       (game-utils-aiamg/gui-show-board board camera base-frame border-coords cell-coords [])
+				       (reset! selected-cell-indexes nil)
+				       (reset! mouse-over-cell-indexes nil)
+				       (reset! mouse-over-cell-frame-color nil)
+				       (game-utils-aiamg/gui-show-board board camera base-frame border-coords cell-coords @selected-cell-indexes)
 				       (.showScene camera)
 				       (finally
 				         (.unlock sync-lock)
@@ -138,7 +191,9 @@
 						   (do
 						     (.lock sync-lock)
 						     (try
-						       (game-utils-aiamg/update-scene-from-cell-coords board camera [previous-cell-coord-in-focus] [previous-selected-cell-index] [cell-index-in-focus] {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue})
+						       (reset! mouse-over-cell-indexes [cell-index-in-focus])
+						       (reset! mouse-over-cell-frame-color {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue})
+						       (game-utils-aiamg/update-scene-from-cell-coords board camera [previous-cell-coord-in-focus] @selected-cell-indexes @mouse-over-cell-indexes @mouse-over-cell-frame-color)
 						       (.showScene camera)
 						       (finally
 				                         (.unlock sync-lock)
@@ -161,8 +216,10 @@
 					         (do
 						   (.lock sync-lock)
 						   (try
-					             (if (not= nil previous-cell-coord-in-focus)(game-utils-aiamg/update-scene-from-cell-coords board camera [previous-cell-coord-in-focus] [previous-selected-cell-index] [cell-index-in-focus] {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue}))
-						     (game-utils-aiamg/update-scene-from-cell-coords board camera [cell-coord-in-focus] [previous-selected-cell-index] [cell-index-in-focus] {:top Color/gray :bottom Color/gray :left Color/gray :right Color/gray})
+						     (reset! mouse-over-cell-indexes [cell-index-in-focus])
+						     (reset! mouse-over-cell-frame-color {:top Color/gray :bottom Color/gray :left Color/gray :right Color/gray})
+					             (if (not= nil previous-cell-coord-in-focus)(game-utils-aiamg/update-scene-from-cell-coords board camera [previous-cell-coord-in-focus] [previous-selected-cell-index] [{:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}] {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue}))
+						     (game-utils-aiamg/update-scene-from-cell-coords board camera [cell-coord-in-focus] @selected-cell-indexes @mouse-over-cell-indexes @mouse-over-cell-frame-color)
 						     (.showScene camera)
 				                     (finally
 				                       (.unlock sync-lock)
@@ -182,7 +239,9 @@
 					    (do
 					      (.lock sync-lock)
 					      (try
-					        (game-utils-aiamg/update-scene-from-cell-coords board camera [previous-cell-coord-in-focus] [previous-selected-cell-index] [{:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}] {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue})
+						(reset! mouse-over-cell-indexes [{:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}])
+						(reset! mouse-over-cell-frame-color {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue})
+						(game-utils-aiamg/update-scene-from-cell-coords board camera [previous-cell-coord-in-focus] @selected-cell-indexes @mouse-over-cell-indexes @mouse-over-cell-frame-color)
 					        (.showScene camera)
 				                (finally
 				                  (.unlock sync-lock)
@@ -222,9 +281,12 @@
 		      cell-coords
 		      player-chip
 		      sync-lock
+		      selected-cell-indexes
+		      mouse-over-cell-indexes
+		      mouse-over-cell-frame-color
 		    ]
   (let [
-         selected-move (get-user-selection board camera window-width window-height base-frame border-coords cell-coords player-chip sync-lock)
+         selected-move (get-user-selection board camera window-width window-height base-frame border-coords cell-coords player-chip sync-lock selected-cell-indexes mouse-over-cell-indexes mouse-over-cell-frame-color)
        ]
        {
          :from-coord [(:column-index (:from-cell selected-move)) (:row-index (:from-cell selected-move))]

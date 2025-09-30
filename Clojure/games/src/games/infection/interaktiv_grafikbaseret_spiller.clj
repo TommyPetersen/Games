@@ -29,6 +29,9 @@
          cell-coords (:cell-coords cell-grid-coords)
          board (atom (infection-utils-misc/init-board "*" "¤"))
 	 boards (atom [@board])
+	 selected-cell-indexes (atom nil)
+	 mouse-over-cell-indexes (atom nil)
+	 mouse-over-cell-frame-color (atom nil)
 	 history-length 15
 	 stats-frame (game-utils-aiamg/calculate-aux-frame (:left border-coords) (+ (:left border-coords) (* 20 history-length)) (:base-frame-top-border base-frame) (:top border-coords) 0 0 10 10)
 	 available-x-delta (- (:right border-coords) (:frame-x1 stats-frame))
@@ -37,12 +40,13 @@
 	 opponent-chip (if (= player-number 1) "¤" "*")
 	 sync-lock (ReentrantLock. )
 	 show-game-score (fn []
-	                   (game-utils-aiamg/gui-show-board @board @camera base-frame border-coords cell-coords nil)
+	                   (game-utils-aiamg/gui-show-board @board @camera base-frame border-coords cell-coords @selected-cell-indexes)
+			   (game-utils-aiamg/update-scene-from-cell-coords @board @camera cell-coords @selected-cell-indexes @mouse-over-cell-indexes @mouse-over-cell-frame-color)
 	 	           (game-utils-aiamg/show-aux-frame @camera stats-frame)
 	 	           (let [
 	 		          historic-boards (drop (- (count @boards) history-length) @boards)
 	 		        ]
-	 		        (game-utils-aiamg/show-graphs @camera (infection-utils-misc/count-symbols-in-boards historic-boards player-chip opponent-chip) history-length (+ 5 (:frame-x0 stats-frame)) (+ 1 (:frame-y0 stats-frame)) (- (:frame-x1 stats-frame) 5) (- (:frame-y1 stats-frame) 5))
+	 		        (infection-utils-aiamg/show-graphs @camera (infection-utils-misc/count-symbols-in-boards historic-boards player-chip opponent-chip) history-length (+ 5 (:frame-x0 stats-frame)) (+ 1 (:frame-y0 stats-frame)) (- (:frame-x1 stats-frame) 5) (- (:frame-y1 stats-frame) 5))
 	                   )
 	                 )
          get-user-move (fn [player-number]
@@ -68,7 +72,7 @@
 				       )
 				       1000 120000)
 			            continue-going (:continue-going go-loop-result)
-			            move (infection-utils-aiamg/get-user-move @board @camera window-width window-height base-frame border-coords cell-coords player-chip sync-lock)
+			            move (infection-utils-aiamg/get-user-move @board @camera window-width window-height base-frame border-coords cell-coords player-chip sync-lock selected-cell-indexes mouse-over-cell-indexes mouse-over-cell-frame-color)
 			            _ (reset! continue-going false)
 				  ]
 			          (if (infection-utils-misc/move-valid? @board player-chip move)
@@ -108,6 +112,7 @@
 			       (.lock sync-lock)
 			       (try
 			         (.clearRaster @camera)
+				 (reset! selected-cell-indexes [{:row-index (second (:from-coord move)) :column-index (first (:from-coord move))} {:row-index (second (:to-coord move)) :column-index (first (:to-coord move))}])
 			         (show-game-score)
     			         (game-utils-aiamg/show-aux-frame @camera countdown-frame-player)
 			         (game-utils-aiamg/show-countdown @camera player-chip 0 120000 (+ (:frame-x0 countdown-frame-player) 1) (+ (:frame-y0 countdown-frame-player) 1) (- (:frame-x1 countdown-frame-player) 1) (- (:frame-y1 countdown-frame-player) 1))
@@ -129,6 +134,7 @@
 					    (.lock sync-lock)
 					    (try
 					      (.clearRaster @camera)
+				              (reset! selected-cell-indexes nil)
 					      (show-game-score)
     			                      (game-utils-aiamg/show-aux-frame @camera countdown-frame-player)
 			                      (game-utils-aiamg/show-countdown @camera player-chip 0 120000 (+ (:frame-x0 countdown-frame-player) 1) (+ (:frame-y0 countdown-frame-player) 1) (- (:frame-x1 countdown-frame-player) 1) (- (:frame-y1 countdown-frame-player) 1))
