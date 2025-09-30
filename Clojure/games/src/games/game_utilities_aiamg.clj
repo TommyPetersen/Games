@@ -127,20 +127,23 @@
     		       countdown-frame-x1	; Countdown frame's right limit
 		       countdown-frame-y1	; Countdown frame's top limit
                      ]
-  (let [
-	 chip-color (if (= chip-symbol "*") Color/white Color/red)
-         fraction (/ total-time-used time-limit)
-	 yr (+ (* countdown-frame-y1 (- 1 fraction)) (* countdown-frame-y0 fraction))
-	 chip-polygon (doto (new Polygon3D)
-                            (.addPoint (new Point3D countdown-frame-x0 countdown-frame-y0 projection-plane-z chip-color))
-                            (.addPoint (new Point3D countdown-frame-x1 countdown-frame-y0 projection-plane-z chip-color))
-                            (.addPoint (new Point3D countdown-frame-x1 (- yr 1) projection-plane-z chip-color))
-                            (.addPoint (new Point3D countdown-frame-x0 (- yr 1) projection-plane-z chip-color))
-                      )
-       ]
-       (doto camera
-	 (.updateScene chip-polygon)
-       )
+  (if (< total-time-used time-limit)
+    (let [
+ 	   chip-color (if (= chip-symbol "*") Color/white Color/red)
+           fraction (/ total-time-used time-limit)
+	   yr (+ (* countdown-frame-y1 (- 1 fraction)) (* countdown-frame-y0 fraction))
+	   yr-bounded-top (if (>= yr countdown-frame-y1) (- yr 1) yr)
+	   chip-polygon (doto (new Polygon3D)
+                              (.addPoint (new Point3D countdown-frame-x0 countdown-frame-y0 projection-plane-z chip-color))
+                              (.addPoint (new Point3D countdown-frame-x1 countdown-frame-y0 projection-plane-z chip-color))
+                              (.addPoint (new Point3D countdown-frame-x1 yr-bounded-top projection-plane-z chip-color))
+                              (.addPoint (new Point3D countdown-frame-x0 yr-bounded-top projection-plane-z chip-color))
+                        )
+         ]
+         (doto camera
+	   (.updateScene chip-polygon)
+         )
+    )
   )
 )
 

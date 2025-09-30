@@ -39,6 +39,7 @@
 	 player-chip (if (= player-number 1) "*" "¤")
 	 opponent-chip (if (= player-number 1) "¤" "*")
 	 sync-lock (ReentrantLock. )
+	 interrupt-get-move (atom false)
 	 show-game-score (fn []
 	                   (game-utils-aiamg/gui-show-board @board @camera base-frame border-coords cell-coords @selected-cell-indexes)
 			   (game-utils-aiamg/update-scene-from-cell-coords @board @camera cell-coords @selected-cell-indexes @mouse-over-cell-indexes @mouse-over-cell-frame-color)
@@ -56,6 +57,8 @@
 			       (str {:from-coord [-1 -1] :to-coord [-1 -1]})
 			     )
 			     (let [
+			            time-unit 1000
+			            time-limit 120000
 				    go-loop-result (game-utils-misc/go-loop-on-atom
 				      #(do
 				         (.lock sync-lock)
@@ -63,16 +66,16 @@
 				           (.clearRaster @camera)
 					   (show-game-score)
     				           (game-utils-aiamg/show-aux-frame @camera countdown-frame-player)
-				           (game-utils-aiamg/show-countdown @camera player-chip % 120000 (+ (:frame-x0 countdown-frame-player) 1) (+ (:frame-y0 countdown-frame-player) 1) (- (:frame-x1 countdown-frame-player) 1) (- (:frame-y1 countdown-frame-player) 1))
+				           (game-utils-aiamg/show-countdown @camera player-chip % time-limit (+ (:frame-x0 countdown-frame-player) 1) (+ (:frame-y0 countdown-frame-player) 1) (- (:frame-x1 countdown-frame-player) 1) (- (:frame-y1 countdown-frame-player) 1))
 					   (.showScene @camera)
 					   (finally
 				             (.unlock sync-lock)
 				           )
 					 )
 				       )
-				       1000 120000)
+				       time-unit time-limit interrupt-get-move)
 			            continue-going (:continue-going go-loop-result)
-			            move (infection-utils-aiamg/get-user-move @board @camera window-width window-height base-frame border-coords cell-coords player-chip sync-lock selected-cell-indexes mouse-over-cell-indexes mouse-over-cell-frame-color)
+			            move (infection-utils-aiamg/get-user-move @board @camera window-width window-height base-frame border-coords cell-coords player-chip sync-lock selected-cell-indexes mouse-over-cell-indexes mouse-over-cell-frame-color interrupt-get-move)
 			            _ (reset! continue-going false)
 				  ]
 			          (if (infection-utils-misc/move-valid? @board player-chip move)
@@ -84,7 +87,7 @@
 				           (.clearRaster @camera)
  					   (show-game-score)
     				           (game-utils-aiamg/show-aux-frame @camera countdown-frame-player)
-				           (game-utils-aiamg/show-countdown @camera player-chip (:total-time-used go-loop-result) 120000 (+ (:frame-x0 countdown-frame-player) 1) (+ (:frame-y0 countdown-frame-player) 1) (- (:frame-x1 countdown-frame-player) 1) (- (:frame-y1 countdown-frame-player) 1))
+				           (game-utils-aiamg/show-countdown @camera player-chip (:total-time-used go-loop-result) time-limit (+ (:frame-x0 countdown-frame-player) 1) (+ (:frame-y0 countdown-frame-player) 1) (- (:frame-x1 countdown-frame-player) 1) (- (:frame-y1 countdown-frame-player) 1))
 				           (.showScene @camera)
 					   (finally
 				             (.unlock sync-lock)
