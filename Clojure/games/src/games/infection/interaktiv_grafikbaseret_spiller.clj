@@ -35,7 +35,7 @@
 	 history-length 15
 	 stats-frame (game-utils-aiamg/calculate-aux-frame (:left border-coords) (+ (:left border-coords) (* 20 history-length)) (:base-frame-top-border base-frame) (:top border-coords) 0 0 10 10)
 	 available-x-delta (- (:right border-coords) (:frame-x1 stats-frame))
-	 countdown-frame-player (game-utils-aiamg/calculate-aux-frame (:frame-x1 stats-frame) (:right border-coords) (:base-frame-top-border base-frame) (:top border-coords) 3 93 10 10)
+	 countdown-frame-player (game-utils-aiamg/calculate-aux-frame (:base-frame-left-border base-frame) (:left border-coords) (:top border-coords) (:bottom border-coords) 50 10 85 0)
 	 player-chip (if (= player-number 1) "*" "¤")
 	 opponent-chip (if (= player-number 1) "¤" "*")
 	 sync-lock (ReentrantLock. )

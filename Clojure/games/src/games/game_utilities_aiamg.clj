@@ -132,7 +132,7 @@
  	   chip-color (if (= chip-symbol "*") Color/white Color/red)
            fraction (/ total-time-used time-limit)
 	   yr (+ (* countdown-frame-y1 (- 1 fraction)) (* countdown-frame-y0 fraction))
-	   yr-bounded-top (if (>= yr countdown-frame-y1) (- yr 1) yr)
+	   yr-bounded-top (if (> yr countdown-frame-y1) (- yr 1) yr)
 	   chip-polygon (doto (new Polygon3D)
                               (.addPoint (new Point3D countdown-frame-x0 countdown-frame-y0 projection-plane-z chip-color))
                               (.addPoint (new Point3D countdown-frame-x1 countdown-frame-y0 projection-plane-z chip-color))
@@ -250,10 +250,10 @@
 		selected? (> (count filtered-by-selection) 0)
 		filtered-by-mouse-over (filter #(and (= (:row-index %) i) (= (:column-index %) j)) mouse-over-cell-indexes)
 		mouse-over? (> (count filtered-by-mouse-over) 0)
-		cell-frame-color (if selected?
-				   {:top chip-color :bottom chip-color :left chip-color :right chip-color}
-				   (if mouse-over?
-				     mouse-over-cell-frame-color
+		cell-frame-color (if mouse-over?
+		                   mouse-over-cell-frame-color
+		                   (if selected?
+				     {:top chip-color :bottom chip-color :left chip-color :right chip-color}
 				     {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue}
 				   )
 				 )

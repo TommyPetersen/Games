@@ -10,10 +10,10 @@
 )
 
 (defn go-loop-on-atom [
-          	        loopfunction		; The function which is called in the loop
-                        time-unit  	      	; The time-unit expressed in milliseconds
-			time-limit	      	; The time limit expressed in milliseconds
-			interrupt-get-move    	; Atom deciding if get-user-move should be cancelled
+          	        loopfunction			; The function which is called in the loop
+                        time-unit  	      	  	; The time-unit expressed in milliseconds
+			time-limit	      	  	; The time limit expressed in milliseconds
+			interrupt-for-the-caller  	; Atom with an interrupt signal for the caller
                       ]
   (let [
          continue-going (atom true)
@@ -31,7 +31,7 @@
 	         )
 		 (do
 	           (reset! total-time-used acc-time)
-		   (reset! interrupt-get-move (> @total-time-used time-limit))
+		   (reset! interrupt-for-the-caller (> @total-time-used time-limit))
 		 )
 	       )
          )

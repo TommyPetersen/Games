@@ -60,21 +60,21 @@
 )
 
 (defn get-user-selection ; {:from-cell from-cell :to-cell to-cell}
-            		[
-      	                  board				; vec[kolonne-indeks 0...6][raekke-indeks 0...6]
-	                  camera	  		; Aiamg.Camera
-	                  window-width			; Klient-skaermens bredde i skaermpunkter, heltal stoerre end 0
-	                  window-height	  		; Klient-skaermens hoejde i skaermpunkter, heltal stoerre end 0
-	                  base-frame	  		; Til at tegne en kant udenom spilomraadet i klient-skaermen
-	                  border-coords	      	       	; Spilomraadets graenser i klient-skaermen
-	                  cell-coords	  		; Braettets celler udtrykt ved skaermkoordinater
-	                  player-chip			; Spillerens brik udtrykt som tegnsymbol
-			  sync-lock	  	     	; Clojure-lock som bruges til grafiksynkronisering
-			  selected-cell-indexes      	; Atom til at kommunikere de valgte celler
-			  mouse-over-cell-indexes	; Atom til at kommunikere de fokuserede celler
-			  mouse-over-cell-frame-color   ; Atom til at kommunikere rammefarven paa de fokuserede celler
-			  interrupt			; Atom til at afgoere om brugervalget skal afbrydes
-            		]
+            		 [
+      	                   board			; vec[kolonne-indeks 0...6][raekke-indeks 0...6]
+	                   camera	  		; Aiamg.Camera
+	                   window-width			; Klient-skaermens bredde i skaermpunkter, heltal stoerre end 0
+	                   window-height	  	; Klient-skaermens hoejde i skaermpunkter, heltal stoerre end 0
+	                   base-frame	  		; Til at tegne en kant udenom spilomraadet i klient-skaermen
+	                   border-coords	       	; Spilomraadets graenser i klient-skaermen
+	                   cell-coords	  		; Braettets celler udtrykt ved skaermkoordinater
+	                   player-chip			; Spillerens brik udtrykt som tegnsymbol
+			   sync-lock	  	     	; Clojure-lock som bruges til grafiksynkronisering
+			   selected-cell-indexes      	; Atom til at kommunikere de valgte celler
+			   mouse-over-cell-indexes	; Atom til at kommunikere de fokuserede celler
+			   mouse-over-cell-frame-color  ; Atom til at kommunikere rammefarven paa de fokuserede celler
+			   interrupt			; Atom til at afgoere om brugervalget skal afbrydes
+            		 ]
   (let [
          valid-move-seq (infection-utils-misc/valid-move-seq board player-chip)
          insets (.getInsetsOnScreen camera)
@@ -103,6 +103,8 @@
 					   (do
 				             (.lock sync-lock)
 				             (try
+					       (reset! mouse-over-cell-indexes nil)
+					       (reset! mouse-over-cell-frame-color nil)
 				               (reset! selected-cell-indexes [{:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}])
 				               (game-utils-aiamg/gui-show-board board camera base-frame border-coords cell-coords @selected-cell-indexes)
 				               (.showScene camera)
@@ -208,7 +210,7 @@
 						         (do
 						           (.lock sync-lock)
 						           (try
-						             (reset! mouse-over-cell-indexes [cell-index-in-focus])
+						             (reset! mouse-over-cell-indexes [{:row-index (:row-index previous-cell-coord-in-focus) :column-index (:column-index previous-cell-coord-in-focus)}])
 						             (reset! mouse-over-cell-frame-color {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue})
 						             (game-utils-aiamg/update-scene-from-cell-coords board camera [previous-cell-coord-in-focus] @selected-cell-indexes @mouse-over-cell-indexes @mouse-over-cell-frame-color)
 						             (.showScene camera)
