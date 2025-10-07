@@ -29,14 +29,14 @@
 	         (recur
 	                (+ acc-time time-unit)
 	         )
-		 (do
+	         (do
 	           (reset! total-time-used acc-time)
-		   (reset! interrupt-for-the-caller (> @total-time-used time-limit))
-		 )
+	           (reset! interrupt-for-the-caller (> @total-time-used time-limit))
+	         )
 	       )
          )
        )
-       {:continue-going continue-going :total-time-used @total-time-used}
+       {:continue-going continue-going :total-time-used total-time-used}
   )
 )
 

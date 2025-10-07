@@ -32,49 +32,60 @@
 	 mouse-over-cell-indexes (atom nil)
 	 mouse-over-cell-frame-color (atom nil)
 	 countdown-frame-player (game-utils-aiamg/calculate-aux-frame (:base-frame-left-border base-frame) (:left border-coords) (:top border-coords) (:bottom border-coords) 50 10 85 0)
+ 	 countdown-frame-opponent (game-utils-aiamg/calculate-aux-frame (:right border-coords) (:base-frame-right-border base-frame) (:top border-coords) (:bottom border-coords) 10 50 85 0)
 	 player-chip (if (= player-number 1) "*" "¤")
 	 opponent-chip (if (= player-number 1) "¤" "*")
-	 sync-lock (ReentrantLock. )
+	 continue-going-opponent (atom (atom false))
+	 sync-lock-graphics (ReentrantLock. )
 	 interrupt-get-move (atom false)
-	 show-game-score (fn [total-time-used time-limit]
+	 show-game-score (fn [total-time-used-player total-time-used-opponent time-limit]
 	                   (game-utils-aiamg/gui-show-board @board @camera base-frame border-coords cell-coords @selected-cell-indexes)
 			   (game-utils-aiamg/update-scene-from-cell-coords @board @camera cell-coords @selected-cell-indexes @mouse-over-cell-indexes @mouse-over-cell-frame-color)
     			   (game-utils-aiamg/show-aux-frame @camera countdown-frame-player)
-			   (game-utils-aiamg/show-countdown @camera player-chip total-time-used time-limit (+ (:frame-x0 countdown-frame-player) 1) (+ (:frame-y0 countdown-frame-player) 1) (- (:frame-x1 countdown-frame-player) 1) (- (:frame-y1 countdown-frame-player) 1))
+			   (game-utils-aiamg/show-countdown @camera player-chip total-time-used-player time-limit (+ (:frame-x0 countdown-frame-player) 1) (+ (:frame-y0 countdown-frame-player) 1) (- (:frame-x1 countdown-frame-player) 1) (- (:frame-y1 countdown-frame-player) 1))
+    			   (game-utils-aiamg/show-aux-frame @camera countdown-frame-opponent)
+			   (game-utils-aiamg/show-countdown @camera opponent-chip total-time-used-opponent time-limit (+ (:frame-x0 countdown-frame-opponent) 1) (+ (:frame-y0 countdown-frame-opponent) 1) (- (:frame-x1 countdown-frame-opponent) 1) (- (:frame-y1 countdown-frame-opponent) 1))
 	                 )
          get-user-move (fn [player-number]
 			   (let [
-				  go-loop-result (game-utils-misc/go-loop-on-atom
-				    (fn [v] (do
-				              (.lock sync-lock)
-				              (try
-				                (.clearRaster @camera)
-				                (show-game-score v time-limit)
-				    	        (.showScene @camera)
-				    	        (finally
-				                  (.unlock sync-lock)
-				                )
-				              )
-				            )
-				    )
-				    time-unit time-limit interrupt-get-move)
-			          continue-going (:continue-going go-loop-result)
-			  	  j (connect-four-utils-aiamg/get-user-move @board @camera window-width window-height border-coords cell-coords sync-lock selected-cell-indexes mouse-over-cell-indexes mouse-over-cell-frame-color interrupt-get-move)
+				  go-loop-result-player (game-utils-misc/go-loop-on-atom
+				                          (fn [v] (do
+				                                    (.lock sync-lock-graphics)
+				                                    (try
+				                                      (.clearRaster @camera)
+				                                      (show-game-score v 0 time-limit)
+				    	                              (.showScene @camera)
+				    	                              (finally
+				                                        (.unlock sync-lock-graphics)
+				                                      )
+				                                    )
+				                                  )
+				                          )
+				                          time-unit time-limit interrupt-get-move)
+			          continue-going (:continue-going go-loop-result-player)
+			  	  j (connect-four-utils-aiamg/get-user-move @board @camera window-width window-height border-coords cell-coords sync-lock-graphics selected-cell-indexes mouse-over-cell-indexes mouse-over-cell-frame-color interrupt-get-move)
 			          _ (reset! continue-going false)
 			        ]
 			        (if (connect-four-utils-misc/column-valid? @board 7 6 j)
-				  (do
-				    (swap! board connect-four-utils-misc/insert j player-chip)
-				    (.lock sync-lock)
-				    (try
-				      (.clearRaster @camera)
-				      (reset! selected-cell-indexes [{:row-index 5 :column-index j}])
-				      (show-game-score (:total-time-used go-loop-result) time-limit)
-				      (.showScene @camera)
-				      (finally
-				        (.unlock sync-lock)
-				      )
-				    )
+				  (let [
+				         _ (reset! selected-cell-indexes [{:row-index 5 :column-index j}])
+				         go-loop-result-opponent (game-utils-misc/go-loop-on-atom
+				                                   (fn [v] (do
+				                                             (.lock sync-lock-graphics)
+				                                             (try
+				                                               (.clearRaster @camera)
+				                                               (show-game-score 0 v time-limit)
+				    	                                       (.showScene @camera)
+				    	                                       (finally
+				                                                 (.unlock sync-lock-graphics)
+				                                               )
+				                                             )
+				                                           )
+				                                   )
+				                                   time-unit time-limit interrupt-get-move)
+				         _ (reset! continue-going-opponent (:continue-going go-loop-result-opponent))
+				       ]
+				       (swap! board connect-four-utils-misc/insert j player-chip)
 				  )
 				)
 				j
@@ -87,17 +98,18 @@
 			       ]
 			       (if (connect-four-utils-misc/column-valid? @board 7 6 j)
 			         (do
+			           (reset! @continue-going-opponent false)
 				   (swap! board connect-four-utils-misc/insert j opponent-chip)
 				 )
 			       )
-			       (.lock sync-lock)
+			       (.lock sync-lock-graphics)
 			       (try
 			         (.clearRaster @camera)
 				 (reset! selected-cell-indexes [{:row-index 5 :column-index j}])
-				 (show-game-score 0 time-limit)
+				 (show-game-score 0 0 time-limit)
 				 (.showScene @camera)
 				 (finally
-				   (.unlock sync-lock)
+				   (.unlock sync-lock-graphics)
 				 )
 			       )
 			  )
@@ -109,14 +121,14 @@
 	        "initialiserSpil"	  (do
 		                            (reset! camera (game-utils-aiamg/new-camera window-width window-height))
 		                            (reset! board (connect-four-utils-misc/empty-board 7))
-			                    (.lock sync-lock)
+			                    (.lock sync-lock-graphics)
 			                    (try
 			                      (.clearRaster @camera)
 				              (reset! selected-cell-indexes nil)
-				              (show-game-score 0 time-limit)
+				              (show-game-score 0 0 time-limit)
 				              (.showScene @camera)
 				              (finally
-				                (.unlock sync-lock)
+				                (.unlock sync-lock-graphics)
 				              )
 			                    )
 					    {:data ["Ok"]}
