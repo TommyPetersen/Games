@@ -37,8 +37,10 @@
 	 history-length 15
 	 stats-frame (game-utils-aiamg/calculate-aux-frame (:left border-coords) (+ (:left border-coords) (* 20 history-length)) (:base-frame-top-border base-frame) (:top border-coords) 0 0 10 10)
 	 available-x-delta (- (:right border-coords) (:frame-x1 stats-frame))
-	 countdown-frame-player (game-utils-aiamg/calculate-aux-frame (:base-frame-left-border base-frame) (:left border-coords) (:top border-coords) (:bottom border-coords) 50 10 85 0)
-         countdown-frame-opponent (game-utils-aiamg/calculate-aux-frame (:right border-coords) (:base-frame-right-border base-frame) (:top border-coords) (:bottom border-coords) 10 50 85 0)
+	 countdown-frame-left (game-utils-aiamg/calculate-aux-frame (:base-frame-left-border base-frame) (:left border-coords) (:top border-coords) (:bottom border-coords) 50 10 85 0)
+         countdown-frame-right (game-utils-aiamg/calculate-aux-frame (:right border-coords) (:base-frame-right-border base-frame) (:top border-coords) (:bottom border-coords) 10 50 85 0)
+	 countdown-frame-player (if (= player-number 1) countdown-frame-left countdown-frame-right)
+	 countdown-frame-opponent  (if (= player-number 1) countdown-frame-right countdown-frame-left)
 	 player-chip (if (= player-number 1) "*" "¤")
 	 opponent-chip (if (= player-number 1) "¤" "*")
 	 continue-going-opponent (atom (atom false))
