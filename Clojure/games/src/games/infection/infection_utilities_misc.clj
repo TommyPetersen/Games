@@ -222,6 +222,10 @@
   )
 )
 
+(defn can-move? [board symbol]
+  (not (cannot-move? board symbol))
+)
+
 (defn board-to-str [board row-tabulator]
   (loop [
           i 6

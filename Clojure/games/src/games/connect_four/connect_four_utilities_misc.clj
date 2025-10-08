@@ -134,6 +134,10 @@
   (every? #(= (count %) board-height) board)
 )
 
+(defn is-not-full? [board board-height]
+  (not (is-full? board board-height))
+)
+
 (defn board-to-str [board board-height row-tabulator]
   (let [board-width (count board)]
     (if (= board-width 0)

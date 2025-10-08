@@ -29,6 +29,8 @@
          cell-coords (:cell-coords cell-grid-coords)
          board (atom (infection-utils-misc/init-board "*" "¤"))
 	 boards (atom [@board])
+	 time-unit 1000
+         time-limit 120000
 	 selected-cell-indexes (atom nil)
 	 mouse-over-cell-indexes (atom nil)
 	 mouse-over-cell-frame-color (atom nil)
@@ -36,13 +38,19 @@
 	 stats-frame (game-utils-aiamg/calculate-aux-frame (:left border-coords) (+ (:left border-coords) (* 20 history-length)) (:base-frame-top-border base-frame) (:top border-coords) 0 0 10 10)
 	 available-x-delta (- (:right border-coords) (:frame-x1 stats-frame))
 	 countdown-frame-player (game-utils-aiamg/calculate-aux-frame (:base-frame-left-border base-frame) (:left border-coords) (:top border-coords) (:bottom border-coords) 50 10 85 0)
+         countdown-frame-opponent (game-utils-aiamg/calculate-aux-frame (:right border-coords) (:base-frame-right-border base-frame) (:top border-coords) (:bottom border-coords) 10 50 85 0)
 	 player-chip (if (= player-number 1) "*" "¤")
 	 opponent-chip (if (= player-number 1) "¤" "*")
-	 sync-lock (ReentrantLock. )
+	 continue-going-opponent (atom (atom false))
+	 sync-lock-graphics (ReentrantLock. )
 	 interrupt-get-move (atom false)
-	 show-game-score (fn []
+	 show-game-score (fn [total-time-used-player total-time-used-opponent time-limit]
 	                   (game-utils-aiamg/gui-show-board @board @camera base-frame border-coords cell-coords @selected-cell-indexes)
-			   (game-utils-aiamg/update-scene-from-cell-coords @board @camera cell-coords @selected-cell-indexes @mouse-over-cell-indexes @mouse-over-cell-frame-color)
+			   (game-utils-aiamg/update-scene-from-cell-coords @board @camera cell-coords @selected-cell-indexes @mouse-over-cell-indexes @mouse-over-cell-frame-color)			   
+    			   (game-utils-aiamg/show-aux-frame @camera countdown-frame-player)
+			   (game-utils-aiamg/show-countdown @camera player-chip total-time-used-player time-limit (+ (:frame-x0 countdown-frame-player) 1) (+ (:frame-y0 countdown-frame-player) 1) (- (:frame-x1 countdown-frame-player) 1) (- (:frame-y1 countdown-frame-player) 1))
+                           (game-utils-aiamg/show-aux-frame @camera countdown-frame-opponent)
+                           (game-utils-aiamg/show-countdown @camera opponent-chip total-time-used-opponent time-limit (+ (:frame-x0 countdown-frame-opponent) 1) (+ (:frame-y0 countdown-frame-opponent) 1) (- (:frame-x1 countdown-frame-opponent) 1) (- (:frame-y1 countdown-frame-opponent) 1))
 	 	           (game-utils-aiamg/show-aux-frame @camera stats-frame)
 	 	           (let [
 	 		          historic-boards (drop (- (count @boards) history-length) @boards)
@@ -57,42 +65,59 @@
 			       (str {:from-coord [-1 -1] :to-coord [-1 -1]})
 			     )
 			     (let [
-			            time-unit 1000
-			            time-limit 120000
-				    go-loop-result (game-utils-misc/go-loop-on-atom
-				      #(do
-				         (.lock sync-lock)
-					 (try
-				           (.clearRaster @camera)
-					   (show-game-score)
-    				           (game-utils-aiamg/show-aux-frame @camera countdown-frame-player)
-				           (game-utils-aiamg/show-countdown @camera player-chip % time-limit (+ (:frame-x0 countdown-frame-player) 1) (+ (:frame-y0 countdown-frame-player) 1) (- (:frame-x1 countdown-frame-player) 1) (- (:frame-y1 countdown-frame-player) 1))
-					   (.showScene @camera)
-					   (finally
-				             (.unlock sync-lock)
-				           )
-					 )
-				       )
-				       time-unit time-limit interrupt-get-move)
-			            continue-going (:continue-going go-loop-result)
-			            move (infection-utils-aiamg/get-user-move @board @camera window-width window-height base-frame border-coords cell-coords player-chip sync-lock selected-cell-indexes mouse-over-cell-indexes mouse-over-cell-frame-color interrupt-get-move)
+				    go-loop-result-player (game-utils-misc/go-loop-on-atom
+				                            (fn [v] (do
+				                                      (.lock sync-lock-graphics)
+					                              (try
+				                                        (.clearRaster @camera)
+					                                (show-game-score v 0 time-limit)
+					                                (.showScene @camera)
+					                                (finally
+				                                          (.unlock sync-lock-graphics)
+				                                        )
+					                              )
+				                                    )
+						            )
+				                            time-unit time-limit interrupt-get-move)
+			            continue-going (:continue-going go-loop-result-player)
+			            move (infection-utils-aiamg/get-user-move @board @camera window-width window-height base-frame border-coords cell-coords player-chip sync-lock-graphics selected-cell-indexes mouse-over-cell-indexes mouse-over-cell-frame-color interrupt-get-move)
 			            _ (reset! continue-going false)
 				  ]
 			          (if (infection-utils-misc/move-valid? @board player-chip move)
 				    (do
-				         (swap! board infection-utils-misc/make-move move)
-				         (swap! boards conj @board)
-					 (.lock sync-lock)
-					 (try
-				           (.clearRaster @camera)
- 					   (show-game-score)
-    				           (game-utils-aiamg/show-aux-frame @camera countdown-frame-player)
-				           (game-utils-aiamg/show-countdown @camera player-chip (:total-time-used go-loop-result) time-limit (+ (:frame-x0 countdown-frame-player) 1) (+ (:frame-y0 countdown-frame-player) 1) (- (:frame-x1 countdown-frame-player) 1) (- (:frame-y1 countdown-frame-player) 1))
-				           (.showScene @camera)
-					   (finally
-				             (.unlock sync-lock)
-				           )
-					 )
+				      (swap! board infection-utils-misc/make-move move)
+				      (swap! boards conj @board)
+				      (if (infection-utils-misc/can-move? @board opponent-chip)
+				        (let [
+				               go-loop-result-opponent (game-utils-misc/go-loop-on-atom
+                                                                         (fn [v] (do
+                                                                                   (.lock sync-lock-graphics)
+                                                                                   (try
+                                                                                     (.clearRaster @camera)
+                                                                                     (show-game-score 0 v time-limit)
+                                                                                     (.showScene @camera)
+                                                                                     (finally
+                                                                                       (.unlock sync-lock-graphics)
+                                                                                     )
+                                                                                   )
+                                                                                 )
+								         )
+                                                                         time-unit time-limit interrupt-get-move)
+				             ]
+                                             (reset! continue-going-opponent (:continue-going go-loop-result-opponent))
+				        )
+					(do
+					  (.lock sync-lock-graphics)
+                                          (try
+                                            (.clearRaster @camera)
+                                            (show-game-score 0 0 time-limit)
+                                            (.showScene @camera)
+                                            (finally
+                                              (.unlock sync-lock-graphics)
+                                            )
+                                          )
+					)
+				      )
 				    )
 				  )
 				  (str move)
@@ -106,22 +131,21 @@
 				 from-cell {:row-index (second (:from-coord move)) :column-index (first (:from-coord move))}
 				 to-cell {:row-index (second (:to-coord move)) :column-index (first (:to-coord move))}
 			       ]
+			       (reset! @continue-going-opponent false)
 			       (if (infection-utils-misc/move-valid? @board opponent-chip move)
 			         (do
 			           (swap! board infection-utils-misc/make-move move)
 				   (swap! boards conj @board)
 				 )
 			       )
-			       (.lock sync-lock)
+			       (.lock sync-lock-graphics)
 			       (try
 			         (.clearRaster @camera)
 				 (reset! selected-cell-indexes [{:row-index (second (:from-coord move)) :column-index (first (:from-coord move))} {:row-index (second (:to-coord move)) :column-index (first (:to-coord move))}])
-			         (show-game-score)
-    			         (game-utils-aiamg/show-aux-frame @camera countdown-frame-player)
-			         (game-utils-aiamg/show-countdown @camera player-chip 0 120000 (+ (:frame-x0 countdown-frame-player) 1) (+ (:frame-y0 countdown-frame-player) 1) (- (:frame-x1 countdown-frame-player) 1) (- (:frame-y1 countdown-frame-player) 1))
+			         (show-game-score 0 0 time-limit)
      			         (.showScene @camera)
 			         (finally
-				   (.unlock sync-lock)
+				   (.unlock sync-lock-graphics)
 				 )
 			       )
 			  )
@@ -134,16 +158,14 @@
 		                            (reset! camera (game-utils-aiamg/new-camera window-width window-height))
 		                            (reset! board (infection-utils-misc/init-board "*" "¤"))
 					    (reset! boards [@board])
-					    (.lock sync-lock)
+					    (.lock sync-lock-graphics)
 					    (try
 					      (.clearRaster @camera)
 				              (reset! selected-cell-indexes nil)
-					      (show-game-score)
-    			                      (game-utils-aiamg/show-aux-frame @camera countdown-frame-player)
-			                      (game-utils-aiamg/show-countdown @camera player-chip 0 120000 (+ (:frame-x0 countdown-frame-player) 1) (+ (:frame-y0 countdown-frame-player) 1) (- (:frame-x1 countdown-frame-player) 1) (- (:frame-y1 countdown-frame-player) 1))
+					      (show-game-score 0 0 time-limit)
 					      (.showScene @camera)
 					      (finally
-				                (.unlock sync-lock)
+				                (.unlock sync-lock-graphics)
 				              )
 				            )
 					    {:data ["Ok"]}

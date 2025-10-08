@@ -67,25 +67,40 @@
 			          _ (reset! continue-going false)
 			        ]
 			        (if (connect-four-utils-misc/column-valid? @board 7 6 j)
-				  (let [
-				         _ (reset! selected-cell-indexes [{:row-index 5 :column-index j}])
-				         go-loop-result-opponent (game-utils-misc/go-loop-on-atom
-				                                   (fn [v] (do
-				                                             (.lock sync-lock-graphics)
-				                                             (try
-				                                               (.clearRaster @camera)
-				                                               (show-game-score 0 v time-limit)
-				    	                                       (.showScene @camera)
-				    	                                       (finally
-				                                                 (.unlock sync-lock-graphics)
+				  (do
+				    (reset! selected-cell-indexes [{:row-index 5 :column-index j}])
+				    (swap! board connect-four-utils-misc/insert j player-chip)
+				    (if (connect-four-utils-misc/is-not-full? @board 6)
+				      (let [
+				             go-loop-result-opponent (game-utils-misc/go-loop-on-atom
+				                                       (fn [v] (do
+				                                                 (.lock sync-lock-graphics)
+				                                                 (try
+				                                                   (.clearRaster @camera)
+				                                                   (show-game-score 0 v time-limit)
+				    	                                           (.showScene @camera)
+				    	                                           (finally
+				                                                     (.unlock sync-lock-graphics)
+				                                                   )
+				                                                 )
 				                                               )
-				                                             )
-				                                           )
-				                                   )
-				                                   time-unit time-limit interrupt-get-move)
-				         _ (reset! continue-going-opponent (:continue-going go-loop-result-opponent))
-				       ]
-				       (swap! board connect-four-utils-misc/insert j player-chip)
+				                                       )
+				                                       time-unit time-limit interrupt-get-move)
+				           ]
+				           (reset! continue-going-opponent (:continue-going go-loop-result-opponent))
+				      )
+				      (do
+				        (.lock sync-lock-graphics)
+				        (try
+				          (.clearRaster @camera)
+				          (show-game-score 0 0 time-limit)
+				    	  (.showScene @camera)
+				    	  (finally
+				            (.unlock sync-lock-graphics)
+				          )
+				        )
+				      )
+				    )
 				  )
 				)
 				j
@@ -96,9 +111,9 @@
 		                 move-string (nth (:data unit-input) 1)
 				 j (Integer/parseInt move-string)
 			       ]
+			       (reset! @continue-going-opponent false)
 			       (if (connect-four-utils-misc/column-valid? @board 7 6 j)
 			         (do
-			           (reset! @continue-going-opponent false)
 				   (swap! board connect-four-utils-misc/insert j opponent-chip)
 				 )
 			       )
