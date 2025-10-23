@@ -28,8 +28,8 @@
 	 board (atom (connect-four-utils-misc/empty-board 7))
 	 time-unit 1000
 	 time-limit 120000
-	 selected-cell-indexes (atom nil)
-	 mouse-over-cell-indexes (atom nil)
+	 selected-cell-index (atom nil)
+	 mouse-over-cell-index (atom nil)
 	 mouse-over-cell-frame-color (atom nil)
 	 countdown-frame-left (game-utils-aiamg/calculate-aux-frame (:base-frame-left-border base-frame) (:left border-coords) (:top border-coords) (:bottom border-coords) 50 10 85 0)
  	 countdown-frame-right (game-utils-aiamg/calculate-aux-frame (:right border-coords) (:base-frame-right-border base-frame) (:top border-coords) (:bottom border-coords) 10 50 85 0)
@@ -41,8 +41,8 @@
 	 sync-lock-graphics (ReentrantLock. )
 	 interrupt-get-move (atom false)
 	 show-game-score (fn [total-time-used-player total-time-used-opponent time-limit]
-	                   (game-utils-aiamg/gui-show-board @board @camera base-frame border-coords cell-coords @selected-cell-indexes)
-			   (game-utils-aiamg/update-scene-from-cell-coords @board @camera cell-coords @selected-cell-indexes @mouse-over-cell-indexes @mouse-over-cell-frame-color)
+	                   (game-utils-aiamg/gui-show-board @board @camera base-frame border-coords cell-coords [@selected-cell-index])
+			   (game-utils-aiamg/update-scene-from-cell-coords @board @camera cell-coords [@selected-cell-index] @mouse-over-cell-index @mouse-over-cell-frame-color)
     			   (game-utils-aiamg/show-aux-frame @camera countdown-frame-player)
 			   (game-utils-aiamg/show-countdown @camera player-chip total-time-used-player time-limit (+ (:frame-x0 countdown-frame-player) 1) (+ (:frame-y0 countdown-frame-player) 1) (- (:frame-x1 countdown-frame-player) 1) (- (:frame-y1 countdown-frame-player) 1))
     			   (game-utils-aiamg/show-aux-frame @camera countdown-frame-opponent)
@@ -65,12 +65,12 @@
 				                          )
 				                          time-unit time-limit interrupt-get-move)
 			          continue-going (:continue-going go-loop-result-player)
-			  	  j (connect-four-utils-aiamg/get-user-move @board @camera window-width window-height border-coords cell-coords sync-lock-graphics selected-cell-indexes mouse-over-cell-indexes mouse-over-cell-frame-color interrupt-get-move)
+			  	  j (connect-four-utils-aiamg/get-user-move @board @camera window-width window-height border-coords cell-coords sync-lock-graphics selected-cell-index mouse-over-cell-index mouse-over-cell-frame-color interrupt-get-move)
 			          _ (reset! continue-going false)
 			        ]
 			        (if (connect-four-utils-misc/column-valid? @board 7 6 j)
 				  (do
-				    (reset! selected-cell-indexes [{:row-index 5 :column-index j}])
+				    (reset! selected-cell-index {:row-index 5 :column-index j})
 				    (swap! board connect-four-utils-misc/insert j player-chip)
 				    (if (connect-four-utils-misc/is-not-full? @board 6)
 				      (let [
@@ -122,7 +122,7 @@
 			       (.lock sync-lock-graphics)
 			       (try
 			         (.clearRaster @camera)
-				 (reset! selected-cell-indexes [{:row-index 5 :column-index j}])
+				 (reset! selected-cell-index {:row-index 5 :column-index j})
 				 (show-game-score 0 0 time-limit)
 				 (.showScene @camera)
 				 (finally
@@ -141,7 +141,7 @@
 			                    (.lock sync-lock-graphics)
 			                    (try
 			                      (.clearRaster @camera)
-				              (reset! selected-cell-indexes nil)
+				              (reset! selected-cell-index nil)
 				              (show-game-score 0 0 time-limit)
 				              (.showScene @camera)
 				              (finally

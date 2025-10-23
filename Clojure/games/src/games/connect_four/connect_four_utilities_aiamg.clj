@@ -27,9 +27,9 @@
 		      border-coords			; Spilomraadets graenser i klient-skaermen
 		      cell-coords			; Braettets celler udtrykt ved skaermkoordinater
 		      sync-lock	  	     		; Clojure-lock som bruges til grafiksynkronisering
-		      selected-cell-indexes		; Atom til at kommunikere de valgte celler
-		      mouse-over-cell-indexes		; Atom til at kommunikere de fokuserede celler
-		      mouse-over-cell-frame-color  	; Atom til at kommunikere rammefarven paa de fokuserede celler
+		      selected-cell-index		; Atom til at kommunikere valgt celle
+		      mouse-over-cell-index		; Atom til at kommunikere fokuseret celle
+		      mouse-over-cell-frame-color  	; Atom til at kommunikere rammefarven paa fokuseret celle
 		      interrupt				; Atom til at afgoere om brugervalget skal afbrydes
 		    ]
   (let [
@@ -52,7 +52,7 @@
 		   (do
 		     (.lock sync-lock)
 		     (try
-		       (reset! mouse-over-cell-indexes nil)
+		       (reset! mouse-over-cell-index nil)
 		       (reset! mouse-over-cell-frame-color nil)
 		       (finally (.unlock sync-lock))
 		     )
@@ -81,24 +81,23 @@
 		   		     (let [
 				            prev-i (:row-index previous-cell-coord-in-focus)
 					    prev-j (:column-index previous-cell-coord-in-focus)
-					    prev-filtered-by-selection (filter #(and (= (:row-index %) prev-i) (= (:column-index %) prev-j)) @selected-cell-indexes)
-					    prev-selected? (> (count prev-filtered-by-selection) 0)
+					    prev-selected? (and (= (:row-index @selected-cell-index) prev-i) (= (:column-index @selected-cell-index) prev-j))
 					  ]
 					  (if (not @interrupt)
 					    (do
-					      (reset! mouse-over-cell-indexes nil)
+					      (reset! mouse-over-cell-index nil)
 					      (reset! mouse-over-cell-frame-color nil)
 					      (.lock sync-lock)
 					      (try
 				     	        (if (not prev-selected?)
 					          (game-utils-aiamg/update-scene-from-cell-coords board camera [previous-cell-coord-in-focus]
-					  	                                                  @selected-cell-indexes
+					  	                                                  [@selected-cell-index]
 						 		                                  [{:row-index (:row-index previous-cell-coord-in-focus)
 											            :column-index (:column-index previous-cell-coord-in-focus)}]
 											          {:top Color/blue :bottom Color/blue
 											           :left Color/blue :right Color/blue})
 					          (game-utils-aiamg/update-scene-from-cell-coords board camera [previous-cell-coord-in-focus]
-					                                                          @selected-cell-indexes
+					                                                          [@selected-cell-index]
 										                  nil
 											          nil)
 					        )
@@ -127,30 +126,30 @@
 				       (do
 				         (.lock sync-lock)
 				         (try
-				           (reset! mouse-over-cell-indexes [cell-index-in-focus])
+				           (reset! mouse-over-cell-index cell-index-in-focus)
 		                           (reset! mouse-over-cell-frame-color {:top Color/gray :bottom Color/gray :left Color/gray :right Color/gray})
 				           (if (not= nil previous-cell-coord-in-focus)
 				             (let [
 					            prev-i (:row-index previous-cell-coord-in-focus)
 						    prev-j (:column-index previous-cell-coord-in-focus)
-					            prev-filtered-by-selection (filter #(and (= (:row-index %) prev-i) (= (:column-index %) prev-j)) @selected-cell-indexes)
-						    prev-selected? (> (count prev-filtered-by-selection) 0)]
+						    prev-selected? (and (= (:row-index @selected-cell-index) prev-i) (= (:column-index @selected-cell-index) prev-j))
+						  ]
 				                  (if (not prev-selected?)
 					            (game-utils-aiamg/update-scene-from-cell-coords board camera [previous-cell-coord-in-focus]
-						                                                    @selected-cell-indexes
+						                                                    [@selected-cell-index]
 						  				                    [{:row-index (:row-index previous-cell-coord-in-focus)
 												      :column-index (:column-index previous-cell-coord-in-focus)}]
 												     {:top Color/blue :bottom Color/blue
 												      :left Color/blue :right Color/blue})
 					            (game-utils-aiamg/update-scene-from-cell-coords board camera [previous-cell-coord-in-focus]
-						                                                    @selected-cell-indexes
+						                                                    [@selected-cell-index]
 												    nil
 												    nil)
 					          )
 					     )
 					   )
 				           (game-utils-aiamg/update-scene-from-cell-coords board camera [cell-coord-in-focus]
-					                                                   @selected-cell-indexes @mouse-over-cell-indexes
+					                                                   [@selected-cell-index] @mouse-over-cell-index
 								 	                   @mouse-over-cell-frame-color)
 				           (.showScene camera)
 				           (finally (.unlock sync-lock))
@@ -171,18 +170,17 @@
 			      (let [
 				     prev-i (:row-index previous-cell-coord-in-focus)
 				     prev-j (:column-index previous-cell-coord-in-focus)
-				     prev-filtered-by-selection (filter #(and (= (:row-index %) prev-i) (= (:column-index %) prev-j)) @selected-cell-indexes)
-				     prev-selected? (> (count prev-filtered-by-selection) 0)
+				     prev-selected? (and (= (:row-index @selected-cell-index) prev-i) (= (:column-index @selected-cell-index) prev-j))
 				   ]
 				   (if (not @interrupt)
 			             (do
 				       (.lock sync-lock)
 				       (try
-				         (reset! mouse-over-cell-indexes nil)
+				         (reset! mouse-over-cell-index nil)
 		                         (reset! mouse-over-cell-frame-color nil)
 				         (if (not prev-selected?)
-			                   (game-utils-aiamg/update-scene-from-cell-coords board camera [previous-cell-coord-in-focus] @selected-cell-indexes [{:row-index prev-i :column-index prev-j}] {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue})
-			                   (game-utils-aiamg/update-scene-from-cell-coords board camera [previous-cell-coord-in-focus] @selected-cell-indexes [{:row-index prev-i :column-index prev-j}] {:top Color/darkGray :bottom Color/darkGray :left Color/darkGray :right Color/darkGray})
+			                   (game-utils-aiamg/update-scene-from-cell-coords board camera [previous-cell-coord-in-focus] @selected-cell-index [{:row-index prev-i :column-index prev-j}] {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue})
+			                   (game-utils-aiamg/update-scene-from-cell-coords board camera [previous-cell-coord-in-focus] @selected-cell-index [{:row-index prev-i :column-index prev-j}] {:top Color/darkGray :bottom Color/darkGray :left Color/darkGray :right Color/darkGray})
 				         )
 			                 (.showScene camera)
 				         (finally (.unlock sync-lock))

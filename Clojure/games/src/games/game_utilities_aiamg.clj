@@ -3,6 +3,7 @@
   (:import
 	(java.awt Color)
 	(Aiamg Camera Polygon3D Point3D Line3D)
+        [java.util.concurrent.locks ReentrantLock]
   )
 )
 
@@ -19,34 +20,34 @@
          margin-y (Math/round (* (/ margin-pct 100) (Math/abs (- y0-d y1-d))))
 
          cell-top (doto (new Polygon3D)
-                           (.addPoint (new Point3D (+ x0-d 1) (+ y0-d 0) projection-plane-z (:top cell-frame-color)))
+                           (.addPoint (new Point3D (+ x0-d 0) (+ y0-d 0) projection-plane-z (:top cell-frame-color)))
 			   (.addPoint (new Point3D (- x1-d 0) (+ y0-d 0) projection-plane-z (:top cell-frame-color)))
 			   (.addPoint (new Point3D (- x1-d 0) (- y0-d margin-y) projection-plane-z (:top cell-frame-color)))
-			   (.addPoint (new Point3D (+ x0-d 1) (- y0-d margin-y) projection-plane-z (:top cell-frame-color)))
+			   (.addPoint (new Point3D (+ x0-d 0) (- y0-d margin-y) projection-plane-z (:top cell-frame-color)))
                    )
          cell-bottom (doto (new Polygon3D)
-                           (.addPoint (new Point3D (+ x0-d 1) (+ y1-d 1) projection-plane-z (:bottom cell-frame-color)))
-			   (.addPoint (new Point3D (- x1-d 0) (+ y1-d 1) projection-plane-z (:bottom cell-frame-color)))
+                           (.addPoint (new Point3D (+ x0-d 0) (+ y1-d 0) projection-plane-z (:bottom cell-frame-color)))
+			   (.addPoint (new Point3D (- x1-d 0) (+ y1-d 0) projection-plane-z (:bottom cell-frame-color)))
 			   (.addPoint (new Point3D (- x1-d 0) (+ y1-d margin-y) projection-plane-z (:bottom cell-frame-color)))
-			   (.addPoint (new Point3D (+ x0-d 1) (+ y1-d margin-y) projection-plane-z (:bottom cell-frame-color)))
+			   (.addPoint (new Point3D (+ x0-d 0) (+ y1-d margin-y) projection-plane-z (:bottom cell-frame-color)))
                      )
          cell-left (doto (new Polygon3D)
-                           (.addPoint (new Point3D (+ x0-d 1) (- y0-d margin-y 1) projection-plane-z (:left cell-frame-color)))
-			   (.addPoint (new Point3D (+ x0-d margin-x) (- y0-d margin-y 1) projection-plane-z (:left cell-frame-color)))
-			   (.addPoint (new Point3D (+ x0-d margin-x) (+ y1-d margin-y 1) projection-plane-z (:left cell-frame-color)))
-			   (.addPoint (new Point3D (+ x0-d 1) (+ y1-d margin-y 1) projection-plane-z (:left cell-frame-color)))
+                           (.addPoint (new Point3D (+ x0-d 0) (- y0-d margin-y 0) projection-plane-z (:left cell-frame-color)))
+			   (.addPoint (new Point3D (+ x0-d margin-x) (- y0-d margin-y 0) projection-plane-z (:left cell-frame-color)))
+			   (.addPoint (new Point3D (+ x0-d margin-x) (+ y1-d margin-y 0) projection-plane-z (:left cell-frame-color)))
+			   (.addPoint (new Point3D (+ x0-d 0) (+ y1-d margin-y 0) projection-plane-z (:left cell-frame-color)))
                      )
          cell-right (doto (new Polygon3D)
-                           (.addPoint (new Point3D (- x1-d margin-x) (- y0-d margin-y 1) projection-plane-z (:right cell-frame-color)))
-			   (.addPoint (new Point3D (- x1-d 0) (- y0-d margin-y 1) projection-plane-z (:right cell-frame-color)))
-			   (.addPoint (new Point3D (- x1-d 0) (+ y1-d margin-y 1) projection-plane-z (:right cell-frame-color)))
-			   (.addPoint (new Point3D (- x1-d margin-x) (+ y1-d margin-y 1) projection-plane-z (:right cell-frame-color)))
+                           (.addPoint (new Point3D (- x1-d margin-x) (- y0-d margin-y 0) projection-plane-z (:right cell-frame-color)))
+			   (.addPoint (new Point3D (- x1-d 0) (- y0-d margin-y 0) projection-plane-z (:right cell-frame-color)))
+			   (.addPoint (new Point3D (- x1-d 0) (+ y1-d margin-y 0) projection-plane-z (:right cell-frame-color)))
+			   (.addPoint (new Point3D (- x1-d margin-x) (+ y1-d margin-y 0) projection-plane-z (:right cell-frame-color)))
                      )
 	 cell-chip (doto (new Polygon3D)
-                           (.addPoint (new Point3D (+ x0-d margin-x 1) (- y0-d margin-y 1) projection-plane-z chip-color))
-			   (.addPoint (new Point3D (- x1-d margin-x 1) (- y0-d margin-y 1) projection-plane-z chip-color))
-			   (.addPoint (new Point3D (- x1-d margin-x 1) (+ y1-d margin-y 1) projection-plane-z chip-color))
-			   (.addPoint (new Point3D (+ x0-d margin-x 1) (+ y1-d margin-y 1) projection-plane-z chip-color))
+                           (.addPoint (new Point3D (+ x0-d margin-x 1) (- y0-d margin-y 0) projection-plane-z chip-color))
+			   (.addPoint (new Point3D (- x1-d margin-x 1) (- y0-d margin-y 0) projection-plane-z chip-color))
+			   (.addPoint (new Point3D (- x1-d margin-x 1) (+ y1-d margin-y 0) projection-plane-z chip-color))
+			   (.addPoint (new Point3D (+ x0-d margin-x 1) (+ y1-d margin-y 0) projection-plane-z chip-color))
                    )
        ]
        {:cell-top cell-top :cell-bottom cell-bottom :cell-left cell-left :cell-right cell-right :cell-chip cell-chip}
@@ -80,21 +81,25 @@
 			    frame-border-top
 			    frame-border-bottom
 				
-                            frame-margin-pct-left	; I procent, mellem 0 og 100
-			    frame-margin-pct-right
-			    frame-margin-pct-top
-			    frame-margin-pct-bottom
-                          ]
-  {
-    :frame-x0 (+ frame-border-left (* (- frame-border-right frame-border-left) (/ frame-margin-pct-left 100)))
-    :frame-y0 (+ frame-border-bottom (* (- frame-border-top frame-border-bottom) (/ frame-margin-pct-bottom 100)))
-    :frame-x1 (- frame-border-right (* (- frame-border-right frame-border-left) (/ frame-margin-pct-right 100)))
-    :frame-y1 (- frame-border-top (* (- frame-border-top frame-border-bottom) (/ frame-margin-pct-top 100)))
-  }
+                            nedtaellingsramme-venstre-margin-pctr ; [50 10 85 0]
+			  ]
+  (let [
+         frame-margin-pct-left (nth nedtaellingsramme-venstre-margin-pctr 0)	; I procent, mellem 0 og 100
+	 frame-margin-pct-right (nth nedtaellingsramme-venstre-margin-pctr 1)
+	 frame-margin-pct-top (nth nedtaellingsramme-venstre-margin-pctr 2)
+	 frame-margin-pct-bottom (nth nedtaellingsramme-venstre-margin-pctr 3)
+       ]
+       {
+         :frame-x0 (+ frame-border-left (* (- frame-border-right frame-border-left) (/ frame-margin-pct-left 100)))
+         :frame-y0 (+ frame-border-bottom (* (- frame-border-top frame-border-bottom) (/ frame-margin-pct-bottom 100)))
+         :frame-x1 (- frame-border-right (* (- frame-border-right frame-border-left) (/ frame-margin-pct-right 100)))
+         :frame-y1 (- frame-border-top (* (- frame-border-top frame-border-bottom) (/ frame-margin-pct-top 100)))
+       }
+  )
 )
 
 (defn show-aux-frame [
-                       camera		; Aiamg.Camera
+                       kamera		; Aiamg.Camera
                        aux-frame	; {:frame-x0 :frame-y0 :frame-x1 :frame-y1}
 		     ]
   (let [
@@ -108,7 +113,7 @@
 	 aux-frame-bottom-line (new Line3D (new Point3D (:frame-x0 aux-frame) (:frame-y0 aux-frame) projection-plane-z frame-color)
 	                                   (new Point3D (:frame-x1 aux-frame) (:frame-y0 aux-frame) projection-plane-z frame-color))
        ]
-       (doto camera
+       (doto kamera
 	 (.updateScene aux-frame-left-line)
          (.updateScene aux-frame-top-line)
 	 (.updateScene aux-frame-right-line)
@@ -117,31 +122,31 @@
   )
 )
 
-(defn show-countdown [
-                       camera			; Aiamg.Camera
-		       chip-symbol		; Player1: "*", Player2: "¤"
-		       total-time-used		; The total time used
-		       time-limit		; The time limit
-		       countdown-frame-x0	; Countdown frame's origo-x
-		       countdown-frame-y0	; Countdown frame's origo-y
-    		       countdown-frame-x1	; Countdown frame's right limit
-		       countdown-frame-y1	; Countdown frame's top limit
-                     ]
-  (if (< total-time-used time-limit)
+(defn vis-nedtaelling [
+                        kamera			; Aiamg.Camera
+		        spillerbrik		; Spiller1: "*", Spiller2: "¤"
+		        samlet-tidsforbrug	; Det samlede tidsforbrug
+		        tidsgraense		; Tidsgraensen
+		        nedtaellingsramme-x0	; Nedtaellingsrammens origo-x
+		        nedtaellingsramme-y0	; Nedtaellingsrammens origo-y
+    		        nedtaellingsramme-x1	; Nedtaellingsrammens hoejre graense
+		        nedtaellingsramme-y1	; Nedtaellingsrammens oevre graense
+                      ]
+  (if (< samlet-tidsforbrug tidsgraense)
     (let [
- 	   chip-color (if (= chip-symbol "*") Color/white Color/red)
-           fraction (/ total-time-used time-limit)
-	   yr (+ (* countdown-frame-y1 (- 1 fraction)) (* countdown-frame-y0 fraction))
-	   yr-bounded-top (if (> yr countdown-frame-y1) (- yr 1) yr)
-	   chip-polygon (doto (new Polygon3D)
-                              (.addPoint (new Point3D countdown-frame-x0 countdown-frame-y0 projection-plane-z chip-color))
-                              (.addPoint (new Point3D countdown-frame-x1 countdown-frame-y0 projection-plane-z chip-color))
-                              (.addPoint (new Point3D countdown-frame-x1 yr-bounded-top projection-plane-z chip-color))
-                              (.addPoint (new Point3D countdown-frame-x0 yr-bounded-top projection-plane-z chip-color))
-                        )
+ 	   brikfarve (if (= spillerbrik "*") Color/white Color/red)
+           broekdel (/ samlet-tidsforbrug tidsgraense)
+	   yr (+ (* nedtaellingsramme-y1 (- 1 broekdel)) (* nedtaellingsramme-y0 broekdel))
+	   yr-oevre-graense (if (> yr nedtaellingsramme-y1) (- yr 1) yr)
+	   nedtaellingsfyld (doto (new Polygon3D)
+                                  (.addPoint (new Point3D nedtaellingsramme-x0 nedtaellingsramme-y0 projection-plane-z brikfarve))
+                                  (.addPoint (new Point3D nedtaellingsramme-x1 nedtaellingsramme-y0 projection-plane-z brikfarve))
+                                  (.addPoint (new Point3D nedtaellingsramme-x1 yr-oevre-graense projection-plane-z brikfarve))
+                                  (.addPoint (new Point3D nedtaellingsramme-x0 yr-oevre-graense projection-plane-z brikfarve))
+                            )
          ]
-         (doto camera
-	   (.updateScene chip-polygon)
+         (doto kamera
+	   (.updateScene nedtaellingsfyld)
          )
     )
   )
@@ -225,12 +230,22 @@
   )
 )
 
+(defn find-cell-coord [x y cell-coords]
+  (let [
+         pred #(and (>= x (:cell-left-border %)) (< x (:cell-right-border %))
+                    (>= y (:cell-bottom-border %)) (< y (:cell-top-border %)))
+	 cell-coord (first (filter pred cell-coords))
+       ]
+       cell-coord
+  )
+)
+
 (defn update-scene-from-cell-coords [
                                       board
-                                      camera
+                                      kamera
 				      cell-coords
 				      selected-cell-indexes
-				      mouse-over-cell-indexes
+				      mouse-over-cell-index
 				      mouse-over-cell-frame-color
 				    ]
   (doseq [cell-coord cell-coords]
@@ -239,7 +254,7 @@
 	        j (:column-index cell-coord)
 		i (:row-index cell-coord)
 		board-symbol (game-utils-misc/lookup board [j i])
-		chip-color (if (= board-symbol "*")
+		brikfarve (if (= board-symbol "*")
 			       Color/white
 			       (if (= board-symbol "¤")
 				   Color/red
@@ -248,12 +263,11 @@
 			   )
 		filtered-by-selection (filter #(and (= (:row-index %) i) (= (:column-index %) j)) selected-cell-indexes)
 		selected? (> (count filtered-by-selection) 0)
-		filtered-by-mouse-over (filter #(and (= (:row-index %) i) (= (:column-index %) j)) mouse-over-cell-indexes)
-		mouse-over? (> (count filtered-by-mouse-over) 0)
+		mouse-over? (and (= (:row-index mouse-over-cell-index) i) (= (:column-index mouse-over-cell-index) j))
 		cell-frame-color (if mouse-over?
 		                   mouse-over-cell-frame-color
 		                   (if selected?
-				     {:top chip-color :bottom chip-color :left chip-color :right chip-color}
+				     {:top brikfarve :bottom brikfarve :left brikfarve :right brikfarve}
 				     {:top Color/blue :bottom Color/blue :left Color/blue :right Color/blue}
 				   )
 				 )
@@ -262,9 +276,9 @@
 		cell-top-border (:cell-top-border cell-coord)
 		cell-bottom-border (:cell-bottom-border cell-coord)
 		board-cell-margin-pct 12
-                board-cell (new-board-cell cell-left-border cell-top-border cell-right-border cell-bottom-border board-cell-margin-pct cell-frame-color chip-color)
+                board-cell (new-board-cell cell-left-border cell-top-border cell-right-border cell-bottom-border board-cell-margin-pct cell-frame-color brikfarve)
 	      ]
-	      (doto camera
+	      (doto kamera
 	        (.updateScene (:cell-top board-cell))
 		(.updateScene (:cell-bottom board-cell))
 		(.updateScene (:cell-left board-cell))
@@ -275,7 +289,16 @@
   )
 )
 
-(defn gui-show-board [board camera base-frame border-coords cell-coords selected-cell-indexes]
+(defn gui-show-board [
+                       board
+		       kamera
+		       base-frame
+		       border-coords
+		       cell-coords
+		       selected-cell-indexes
+		       mouse-over-cell-index
+		       mouse-over-cell-frame-color
+		     ]
   (let [
          base-frame-left-line (new Line3D (new Point3D (:base-frame-left-border base-frame) (:base-frame-top-border base-frame) projection-plane-z Color/red)
 	                       (new Point3D (:base-frame-left-border base-frame) (:base-frame-bottom-border base-frame) projection-plane-z Color/red))
@@ -286,16 +309,16 @@
 	 base-frame-bottom-line (new Line3D (new Point3D (:base-frame-right-border base-frame) (:base-frame-bottom-border base-frame) projection-plane-z Color/red)
 	                         (new Point3D (:base-frame-left-border base-frame) (:base-frame-bottom-border base-frame) projection-plane-z Color/red))
 
-         cell-frame-left-line (new Line3D (new Point3D (- (:left border-coords) 0) (+ (:top border-coords) 1) projection-plane-z Color/gray)
-	                                  (new Point3D (- (:left border-coords) 0) (- (:bottom border-coords) 0) projection-plane-z Color/gray))
-	 cell-frame-top-line (new Line3D (new Point3D (- (:left border-coords) 0) (+ (:top border-coords) 1) projection-plane-z Color/gray)
+         cell-frame-left-line (new Line3D (new Point3D (- (:left border-coords) 1) (+ (:top border-coords) 1) projection-plane-z Color/gray)
+	                                  (new Point3D (- (:left border-coords) 1) (- (:bottom border-coords) 1) projection-plane-z Color/gray))
+	 cell-frame-top-line (new Line3D (new Point3D (- (:left border-coords) 1) (+ (:top border-coords) 1) projection-plane-z Color/gray)
 	                                 (new Point3D (+ (:right border-coords) 1) (+ (:top border-coords) 1) projection-plane-z Color/gray))
 	 cell-frame-right-line (new Line3D (new Point3D (+ (:right border-coords) 1) (+ (:top border-coords) 1) projection-plane-z Color/gray)
-	                                   (new Point3D (+ (:right border-coords) 1) (- (:bottom border-coords) 0) projection-plane-z Color/gray))
-	 cell-frame-bottom-line (new Line3D (new Point3D (+ (:right border-coords) 1) (- (:bottom border-coords) 0) projection-plane-z Color/gray)
-	                                    (new Point3D (- (:left border-coords) 0) (- (:bottom border-coords) 0) projection-plane-z Color/gray))
+	                                   (new Point3D (+ (:right border-coords) 1) (- (:bottom border-coords) 1) projection-plane-z Color/gray))
+	 cell-frame-bottom-line (new Line3D (new Point3D (+ (:right border-coords) 1) (- (:bottom border-coords) 1) projection-plane-z Color/gray)
+	                                    (new Point3D (- (:left border-coords) 1) (- (:bottom border-coords) 1) projection-plane-z Color/gray))
        ]
-       (doto camera
+       (doto kamera
 	 (.updateScene base-frame-left-line)
          (.updateScene base-frame-top-line)
 	 (.updateScene base-frame-right-line)
@@ -305,27 +328,172 @@
 	 (.updateScene cell-frame-right-line)
 	 (.updateScene cell-frame-bottom-line)
        )
-       (update-scene-from-cell-coords board camera cell-coords selected-cell-indexes [] nil)
+       (update-scene-from-cell-coords board kamera cell-coords selected-cell-indexes mouse-over-cell-index mouse-over-cell-frame-color)
   )
 )
 
-(defn transform-coords-in-mouse-event [camera insets mouse-event window-width window-height]
-  (let [
-         me-x (.getX mouse-event)
-         me-y (.getY mouse-event)
-	 insets-top (.top insets)
-	 insets-left (.left insets)
-	 me-w (+ me-x insets-left)
-	 me-h (- me-y insets-top)
-	 point-in-projection-plane (.getPointInProjectionPlaneFromPointOnScreen camera me-w me-h)
-       ]
-       {
-         :transformed-x (.x point-in-projection-plane)
-         :transformed-y (.y point-in-projection-plane)
-       }
+(defn transform-coords-in-mouse-event [kamera insets mouse-event]
+  (if (= nil mouse-event)
+    {
+      :transformed-x nil
+      :transformed-y nil
+    }
+    (let [
+           me-x (.getX mouse-event)
+           me-y (.getY mouse-event)
+	   insets-top (.top insets)
+	   insets-left (.left insets)
+	   me-w (+ me-x insets-left)
+	   me-h (- me-y insets-top)
+	   point-in-projection-plane (.getPointInProjectionPlaneFromPointOnScreen kamera me-w me-h)
+         ]
+         {
+           :transformed-x (.x point-in-projection-plane)
+           :transformed-y (.y point-in-projection-plane)
+         }
+    )
   )
 )
 
-(defn new-camera [window-width window-height]
+(defn nyt-kamera [window-width window-height]
   (new Camera 10.0 projection-plane-z window-width window-height window-width window-height)
+)
+
+;;; Grafikmodul ;;;
+
+(def grafikmodul
+  (let [
+         synkro-laas (ReentrantLock.)
+         tilstand (atom {
+	                  :braet nil
+	                  :spillerbrik nil
+			  :modstanderbrik nil
+                          :kamera nil
+		          :base-frame nil
+		          :cell-grid-coords nil
+                          :valgte-celler-indekseret nil
+                          :fokuseret-celle-indekseret nil
+                          :fokuseret-celle-rammefarve nil
+                          :nedtaellingsramme-venstre nil
+                          :nedtaellingsramme-hoejre nil
+                          :nedtaellingsramme-spiller nil
+                          :nedtaellingsramme-modstander nil
+			  :samlet-tid-for-spiller nil
+			  :samlet-tid-for-modstander nil
+			  :tidsgraense nil
+                        }
+		  )
+         funktionalitet (atom {
+	                        :fastsaet-tilstand (fn [
+				                         braet
+				                         spillernummer
+						         vinduesbredde
+				                         vindueshoejde
+						         braetbredde
+						         braethoejde
+						         nedtaellingsramme-venstre-margin-pctr	; [50 10 85 0]
+						         nedtaellingsramme-hoejre-margin-pctr	; [10 50 85 0]
+							 tidsgraense
+						       ]
+						     (let [
+						            spillerbrik (if (= spillernummer 1) "*" "¤")
+							    modstanderbrik (if (= spillernummer 1) "¤" "*")
+						            kamera (nyt-kamera vinduesbredde vindueshoejde)
+							    base-frame (calculate-base-frame vinduesbredde vindueshoejde)
+							    cell-grid-coords (generate-cell-grid-coords braetbredde braethoejde base-frame)
+							    border-coords (:border-coords cell-grid-coords)
+							    cell-coords (:cell-coords cell-grid-coords)
+							    nedtaellingsramme-venstre (calculate-aux-frame (:base-frame-left-border base-frame) (:left border-coords) (:top border-coords) (- (:bottom border-coords) 1) nedtaellingsramme-venstre-margin-pctr)
+							    nedtaellingsramme-hoejre (calculate-aux-frame (:right border-coords) (:base-frame-right-border base-frame) (:top border-coords) (- (:bottom border-coords) 1) nedtaellingsramme-hoejre-margin-pctr)
+							    nedtaellingsramme-spiller (if (= spillernummer 1) nedtaellingsramme-venstre nedtaellingsramme-hoejre)
+							    nedtaellingsramme-modstander (if (= spillernummer 1) nedtaellingsramme-hoejre nedtaellingsramme-venstre)
+							    samlet-tid-for-spiller 0
+							    samlet-tid-for-modstander 0
+						          ]
+						          (reset! tilstand {
+							                     :braet braet
+							                     :spillerbrik spillerbrik
+									     :modstanderbrik modstanderbrik
+							                     :kamera kamera
+								             :base-frame base-frame
+								             :cell-grid-coords cell-grid-coords
+								  	     :valgte-celler-indekseret []
+									     :fokuseret-celle-indekseret nil
+									     :fokuseret-celle-rammefarve nil
+									     :nedtaellingsramme-venstre nedtaellingsramme-venstre
+									     :nedtaellingsramme-hoejre nedtaellingsramme-hoejre
+									     :nedtaellingsramme-spiller nedtaellingsramme-spiller
+									     :nedtaellingsramme-modstander nedtaellingsramme-modstander
+									     :samlet-tid-for-spiller samlet-tid-for-spiller
+									     :samlet-tid-for-modstander samlet-tid-for-modstander
+									     :tidsgraense tidsgraense
+									   }
+						          )
+						     )
+					           )
+				:kald-funktion-med-laas (fn [
+				                              funktion
+				                              argumentliste
+			                                    ]
+                                                          (.lock synkro-laas)
+                                                          (try
+				                            (apply funktion argumentliste)
+                                                            (finally
+                                                              (.unlock synkro-laas)
+                                                            )
+                                                          )
+                                                        )
+				:opdater-tilstand (fn [
+				                        noegle
+							vaerdi
+						      ]
+						    (swap! tilstand assoc noegle vaerdi)
+				                  )
+				:vaelg-fokuseret-celle (fn []
+				                         (let [
+					                        valgte-celler-indekseret (@tilstand :valgte-celler-indekseret)
+						                opdaterede-valgte-celler-indekseret (if (= (@tilstand :fokuseret-celle-indekseret) nil)
+						                                                      valgte-celler-indekseret
+						                                                      (conj valgte-celler-indekseret (@tilstand :fokuseret-celle-indekseret))
+											            )
+					                      ]
+				                              (swap! tilstand assoc :valgte-celler-indekseret opdaterede-valgte-celler-indekseret)
+					                 )
+				                       )
+				:hent-valgte-celler (fn [] (@tilstand :valgte-celler-indekseret))
+				:fravaelg-alle-valgte-celler (fn [] (swap! tilstand assoc :valgte-celler-indekseret []))
+				:rens-laerred (fn [] (.clearRaster (@tilstand :kamera)))
+				:vis-laerred (fn [] (.showScene (@tilstand :kamera)))
+				:tegn-givne-geometriske-figurer (fn [
+				                                      geometriske-figurer	; Liste jvf. Camera.updateScene
+						                    ]
+						                    ((.updateScene (@tilstand :kamera)) geometriske-figurer)
+						                )
+				:tegn-de-gaengse-figurer (fn []
+				                             (let [
+							            spillerbrik (@tilstand :spillerbrik)
+								    modstanderbrik (@tilstand :modstanderbrik)
+								    samlet-tid-for-spiller (@tilstand :samlet-tid-for-spiller)
+								    samlet-tid-for-modstander (@tilstand :samlet-tid-for-modstander)
+								    tidsgraense (@tilstand :tidsgraense)
+							            braet (@tilstand :braet)
+				                                    border-coords ((@tilstand :cell-grid-coords) :border-coords)
+					                            cell-coords ((@tilstand :cell-grid-coords) :cell-coords)
+						                    kamera (@tilstand :kamera)
+						                    nedtaellingsramme-spiller (@tilstand :nedtaellingsramme-spiller)
+						                    nedtaellingsramme-modstander (@tilstand :nedtaellingsramme-modstander)
+				                                  ]
+			                                          (gui-show-board braet kamera (@tilstand :base-frame) border-coords cell-coords (@tilstand :valgte-celler-indekseret) (@tilstand :fokuseret-celle-indekseret) (@tilstand :fokuseret-celle-rammefarve))
+		         			                  (show-aux-frame kamera nedtaellingsramme-spiller)
+		         			                  (show-aux-frame kamera nedtaellingsramme-modstander)
+						                  (vis-nedtaelling kamera spillerbrik samlet-tid-for-spiller tidsgraense (+ (:frame-x0 nedtaellingsramme-spiller) 1) (+ (:frame-y0 nedtaellingsramme-spiller) 1) (- (:frame-x1 nedtaellingsramme-spiller) 1) (- (:frame-y1 nedtaellingsramme-spiller) 1))
+                                                                  (vis-nedtaelling kamera modstanderbrik samlet-tid-for-modstander tidsgraense (+ (:frame-x0 nedtaellingsramme-modstander) 1) (+ (:frame-y0 nedtaellingsramme-modstander) 1) (- (:frame-x1 nedtaellingsramme-modstander) 1) (- (:frame-y1 nedtaellingsramme-modstander) 1))
+				                             )
+			                                 )
+
+                              }
+			)
+       ]
+       {:tilstand tilstand :funktionalitet funktionalitet}
+  )
 )

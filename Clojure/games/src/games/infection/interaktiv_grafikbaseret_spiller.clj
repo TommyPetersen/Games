@@ -18,114 +18,92 @@
     ;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defn new-player [player-number]
+(defn ny-spiller [spillernummer]
   (let [
+         specialiserede-grafikmodul infection-utils-aiamg/specialiserede-grafikmodul
          camera (atom nil)
-	 window-width 800
-	 window-height 600
-	 base-frame (game-utils-aiamg/calculate-base-frame window-width window-height)
+	 vinduesbredde 800
+	 vindueshoejde 600
+	 base-frame (game-utils-aiamg/calculate-base-frame vinduesbredde vindueshoejde)
          cell-grid-coords (game-utils-aiamg/generate-cell-grid-coords 7 7 base-frame)
          border-coords (:border-coords cell-grid-coords)
          cell-coords (:cell-coords cell-grid-coords)
-         board (atom (infection-utils-misc/init-board "*" "¤"))
-	 boards (atom [@board])
-	 time-unit 1000
-         time-limit 120000
+         braet (atom (infection-utils-misc/init-board "*" "¤"))
+	 braethistorik (atom [@braet])
+	 tidsenhed 1000
+         tidsgraense 120000
 	 selected-cell-indexes (atom nil)
-	 mouse-over-cell-indexes (atom nil)
+	 mouse-over-cell-index (atom nil)
 	 mouse-over-cell-frame-color (atom nil)
-	 history-length 15
-	 stats-frame (game-utils-aiamg/calculate-aux-frame (:left border-coords) (+ (:left border-coords) (* 20 history-length)) (:base-frame-top-border base-frame) (:top border-coords) 0 0 10 10)
-	 available-x-delta (- (:right border-coords) (:frame-x1 stats-frame))
-	 countdown-frame-left (game-utils-aiamg/calculate-aux-frame (:base-frame-left-border base-frame) (:left border-coords) (:top border-coords) (:bottom border-coords) 50 10 85 0)
-         countdown-frame-right (game-utils-aiamg/calculate-aux-frame (:right border-coords) (:base-frame-right-border base-frame) (:top border-coords) (:bottom border-coords) 10 50 85 0)
-	 countdown-frame-player (if (= player-number 1) countdown-frame-left countdown-frame-right)
-	 countdown-frame-opponent  (if (= player-number 1) countdown-frame-right countdown-frame-left)
-	 player-chip (if (= player-number 1) "*" "¤")
-	 opponent-chip (if (= player-number 1) "¤" "*")
+	 historiklaengde 15
+	 stats-frame (game-utils-aiamg/calculate-aux-frame (:left border-coords) (+ (:left border-coords) (* 20 historiklaengde)) (:base-frame-top-border base-frame) (:top border-coords) [0 0 10 10])
+	 countdown-frame-left (game-utils-aiamg/calculate-aux-frame (:base-frame-left-border base-frame) (:left border-coords) (:top border-coords) (:bottom border-coords) [50 10 85 0])
+         countdown-frame-right (game-utils-aiamg/calculate-aux-frame (:right border-coords) (:base-frame-right-border base-frame) (:top border-coords) (:bottom border-coords) [10 50 85 0])
+	 countdown-frame-player (if (= spillernummer 1) countdown-frame-left countdown-frame-right)
+	 countdown-frame-opponent  (if (= spillernummer 1) countdown-frame-right countdown-frame-left)
+	 spillerbrik (if (= spillernummer 1) "*" "¤")
+	 modstanderbrik (if (= spillernummer 1) "¤" "*")
 	 continue-going-opponent (atom (atom false))
-	 sync-lock-graphics (ReentrantLock. )
 	 interrupt-get-move (atom false)
-	 show-game-score (fn [total-time-used-player total-time-used-opponent time-limit]
-	                   (game-utils-aiamg/gui-show-board @board @camera base-frame border-coords cell-coords @selected-cell-indexes)
-			   (game-utils-aiamg/update-scene-from-cell-coords @board @camera cell-coords @selected-cell-indexes @mouse-over-cell-indexes @mouse-over-cell-frame-color)			   
-    			   (game-utils-aiamg/show-aux-frame @camera countdown-frame-player)
-			   (game-utils-aiamg/show-countdown @camera player-chip total-time-used-player time-limit (+ (:frame-x0 countdown-frame-player) 1) (+ (:frame-y0 countdown-frame-player) 1) (- (:frame-x1 countdown-frame-player) 1) (- (:frame-y1 countdown-frame-player) 1))
-                           (game-utils-aiamg/show-aux-frame @camera countdown-frame-opponent)
-                           (game-utils-aiamg/show-countdown @camera opponent-chip total-time-used-opponent time-limit (+ (:frame-x0 countdown-frame-opponent) 1) (+ (:frame-y0 countdown-frame-opponent) 1) (- (:frame-x1 countdown-frame-opponent) 1) (- (:frame-y1 countdown-frame-opponent) 1))
-	 	           (game-utils-aiamg/show-aux-frame @camera stats-frame)
-	 	           (let [
-	 		          historic-boards (drop (- (count @boards) history-length) @boards)
-	 		        ]
-	 		        (infection-utils-aiamg/show-graphs @camera (infection-utils-misc/count-symbols-in-boards historic-boards player-chip opponent-chip) history-length (+ 5 (:frame-x0 stats-frame)) (+ 1 (:frame-y0 stats-frame)) (- (:frame-x1 stats-frame) 5) (- (:frame-y1 stats-frame) 5))
-	                   )
-	                 )
-         get-user-move (fn [player-number]
-			   (if (infection-utils-misc/cannot-move? @board player-chip)
-			     (do
-			       (println (str "\tIngen mulige traek paa braettet...melder pas"))
-			       (str {:from-coord [-1 -1] :to-coord [-1 -1]})
-			     )
-			     (let [
-				    go-loop-result-player (game-utils-misc/go-loop-on-atom
-				                            (fn [v] (do
-				                                      (.lock sync-lock-graphics)
-					                              (try
-				                                        (.clearRaster @camera)
-					                                (show-game-score v 0 time-limit)
-					                                (.showScene @camera)
-					                                (finally
-				                                          (.unlock sync-lock-graphics)
-				                                        )
-					                              )
-				                                    )
-						            )
-				                            time-unit time-limit interrupt-get-move)
-			            continue-going (:continue-going go-loop-result-player)
-			            move (infection-utils-aiamg/get-user-move @board @camera window-width window-height base-frame border-coords cell-coords player-chip sync-lock-graphics selected-cell-indexes mouse-over-cell-indexes mouse-over-cell-frame-color interrupt-get-move)
-			            _ (reset! continue-going false)
-				  ]
-			          (if (infection-utils-misc/move-valid? @board player-chip move)
-				    (do
-				      (swap! board infection-utils-misc/make-move move)
-				      (swap! boards conj @board)
-				      (if (infection-utils-misc/can-move? @board opponent-chip)
-				        (let [
-				               go-loop-result-opponent (game-utils-misc/go-loop-on-atom
-                                                                         (fn [v] (do
-                                                                                   (.lock sync-lock-graphics)
-                                                                                   (try
-                                                                                     (.clearRaster @camera)
-                                                                                     (show-game-score 0 v time-limit)
-                                                                                     (.showScene @camera)
-                                                                                     (finally
-                                                                                       (.unlock sync-lock-graphics)
-                                                                                     )
-                                                                                   )
-                                                                                 )
-								         )
-                                                                         time-unit time-limit interrupt-get-move)
-				             ]
-                                             (reset! continue-going-opponent (:continue-going go-loop-result-opponent))
-				        )
-					(do
-					  (.lock sync-lock-graphics)
-                                          (try
-                                            (.clearRaster @camera)
-                                            (show-game-score 0 0 time-limit)
-                                            (.showScene @camera)
-                                            (finally
-                                              (.unlock sync-lock-graphics)
-                                            )
-                                          )
+	 tegn-nedtaellinger (fn [
+	                          samlet-tid-for-spiller
+				  samlet-tid-for-modstander
+				  tidsgraense
+	                        ]
+			      ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
+			        (fn []
+		                  ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-spiller samlet-tid-for-spiller)
+				  ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-modstander samlet-tid-for-modstander)
+				  ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+				)
+				[]
+			      )
+			    )
+         hent-spillertraek (fn [spillernummer]
+			     (if (infection-utils-misc/cannot-move? @braet spillerbrik)
+			       (do
+			         (println (str "\tIngen mulige traek paa braettet...melder pas"))
+			         (str {:from-coord [-1 -1] :to-coord [-1 -1]})
+			       )
+			       (let [
+				      go-loop-result-player (game-utils-misc/go-loop-on-atom
+				                              (fn [v]
+					                        (tegn-nedtaellinger v 0 tidsgraense)
+						              )
+				                              tidsenhed tidsgraense interrupt-get-move)
+			              continue-going (:continue-going go-loop-result-player)
+			              move (infection-utils-aiamg/get-user-move specialiserede-grafikmodul interrupt-get-move)
+			              _ (reset! continue-going false)
+				    ]
+			            (if (infection-utils-misc/move-valid? @braet spillerbrik move)
+				      (do
+				        (swap! braet infection-utils-misc/make-move move)
+				        (swap! braethistorik conj @braet)
+					((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
+					  (fn []
+					    ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :braet @braet)
+					    ((@(specialiserede-grafikmodul :funktionalitet) :opdater-tilstand) :braethistorik @braethistorik)
+					  )
+					  []
 					)
+				        (if (infection-utils-misc/can-move? @braet modstanderbrik)
+				          (let [
+				                 go-loop-result-opponent (game-utils-misc/go-loop-on-atom
+                                                                           (fn [v]
+									     (tegn-nedtaellinger 0 v tidsgraense)
+								           )
+                                                                           tidsenhed tidsgraense interrupt-get-move)
+				               ]
+                                               (reset! continue-going-opponent (:continue-going go-loop-result-opponent))
+				          )
+					  (tegn-nedtaellinger 0 0 tidsgraense)
+				        )
 				      )
 				    )
-				  )
-				  (str move)
+				    (str move)
+			       )
 			     )
-			   )
-		       )
+		         )
 	 update-board (fn [unit-input]
 	                  (let [
 		                 move-string (nth (:data unit-input) 1)
@@ -134,51 +112,54 @@
 				 to-cell {:row-index (second (:to-coord move)) :column-index (first (:to-coord move))}
 			       ]
 			       (reset! @continue-going-opponent false)
-			       (if (infection-utils-misc/move-valid? @board opponent-chip move)
+			       (if (infection-utils-misc/move-valid? @braet modstanderbrik move)
 			         (do
-			           (swap! board infection-utils-misc/make-move move)
-				   (swap! boards conj @board)
+			           (swap! braet infection-utils-misc/make-move move)
+				   (swap! braethistorik conj @braet)
+				   ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
+				     (fn []
+				       ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :braet @braet)
+				       ((@(specialiserede-grafikmodul :funktionalitet) :opdater-tilstand) :braethistorik @braethistorik)
+				     )
+				     []
+				   )
 				 )
 			       )
-			       (.lock sync-lock-graphics)
-			       (try
-			         (.clearRaster @camera)
-				 (reset! selected-cell-indexes [{:row-index (second (:from-coord move)) :column-index (first (:from-coord move))} {:row-index (second (:to-coord move)) :column-index (first (:to-coord move))}])
-			         (show-game-score 0 0 time-limit)
-     			         (.showScene @camera)
-			         (finally
-				   (.unlock sync-lock-graphics)
+			       ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
+			         (fn []
+			           ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [{:row-index (second (:from-coord move)) :column-index (first (:from-coord move))} {:row-index (second (:to-coord move)) :column-index (first (:to-coord move))}])
+			           ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-spiller 0)
+			           ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-modstander 0)
+				   ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+				   ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [])
 				 )
+				 []
 			       )
 			  )
 		      )
        ]
-       (fn [unit-input]
-         (let [first-data-element (first (:data unit-input))]
+       (fn [enheds-inddata]
+         (let [first-data-element (first (:data enheds-inddata))]
              (case first-data-element
 	        "initialiserSpil"	  (do
-		                            (reset! camera (game-utils-aiamg/new-camera window-width window-height))
-		                            (reset! board (infection-utils-misc/init-board "*" "¤"))
-					    (reset! boards [@board])
-					    (.lock sync-lock-graphics)
-					    (try
-					      (.clearRaster @camera)
-				              (reset! selected-cell-indexes nil)
-					      (show-game-score 0 0 time-limit)
-					      (.showScene @camera)
-					      (finally
-				                (.unlock sync-lock-graphics)
-				              )
-				            )
+		                            (reset! braet (infection-utils-misc/init-board "*" "¤"))
+					    (reset! braethistorik [@braet])
+					    ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
+			                      (fn []
+		                                ((@(specialiserede-grafikmodul :funktionalitet) :fastsaet-tilstand) @braet spillernummer vinduesbredde vindueshoejde 7 7 [50 10 85 0] [10 50 85 0] 120000 historiklaengde @braethistorik)
+					        ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+					      )
+					      []
+					    )
 					    {:data ["Ok"]}
 					  )
-                "hentFoersteTraek"        {:data [(str (get-user-move player-number))]}
+                "hentFoersteTraek"        {:data [(str (hent-spillertraek spillernummer))]}
                 "hentNaesteTraek"         (do
-		                            (update-board unit-input)
-					    {:data [(str (get-user-move player-number))]}
+		                            (update-board enheds-inddata)
+					    {:data [(str (hent-spillertraek spillernummer))]}
 					  )
                 "meddelTraek"             (do
-		                            (update-board unit-input)
+		                            (update-board enheds-inddata)
 					    {:data ["Accepteret"]}
 					  )
              )
@@ -188,6 +169,5 @@
 )
 
 
-(def spiller1 (new-player 1))
-(def spiller2 (new-player 2))
-
+(def spiller1 (ny-spiller 1))
+(def spiller2 (ny-spiller 2))
