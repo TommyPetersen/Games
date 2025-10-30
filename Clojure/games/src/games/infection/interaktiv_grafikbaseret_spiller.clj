@@ -13,7 +13,7 @@
 
     ;;;;;;;;;;;;;;;;;;;;;;
     ;;;                ;;;
-    ;;; * Infection  * ;;;
+    ;;; * Infektion  * ;;;
     ;;;                ;;;
     ;;;;;;;;;;;;;;;;;;;;;;
 
@@ -21,7 +21,6 @@
 (defn ny-spiller [spillernummer]
   (let [
          specialiserede-grafikmodul infection-utils-aiamg/specialiserede-grafikmodul
-         camera (atom nil)
 	 vinduesbredde 800
 	 vindueshoejde 600
 	 base-frame (game-utils-aiamg/calculate-base-frame vinduesbredde vindueshoejde)
@@ -32,15 +31,7 @@
 	 braethistorik (atom [@braet])
 	 tidsenhed 1000
          tidsgraense 120000
-	 selected-cell-indexes (atom nil)
-	 mouse-over-cell-index (atom nil)
-	 mouse-over-cell-frame-color (atom nil)
 	 historiklaengde 15
-	 stats-frame (game-utils-aiamg/calculate-aux-frame (:left border-coords) (+ (:left border-coords) (* 20 historiklaengde)) (:base-frame-top-border base-frame) (:top border-coords) [0 0 10 10])
-	 countdown-frame-left (game-utils-aiamg/calculate-aux-frame (:base-frame-left-border base-frame) (:left border-coords) (:top border-coords) (:bottom border-coords) [50 10 85 0])
-         countdown-frame-right (game-utils-aiamg/calculate-aux-frame (:right border-coords) (:base-frame-right-border base-frame) (:top border-coords) (:bottom border-coords) [10 50 85 0])
-	 countdown-frame-player (if (= spillernummer 1) countdown-frame-left countdown-frame-right)
-	 countdown-frame-opponent  (if (= spillernummer 1) countdown-frame-right countdown-frame-left)
 	 spillerbrik (if (= spillernummer 1) "*" "¤")
 	 modstanderbrik (if (= spillernummer 1) "¤" "*")
 	 continue-going-opponent (atom (atom false))
@@ -70,7 +61,8 @@
 				                              (fn [v]
 					                        (tegn-nedtaellinger v 0 tidsgraense)
 						              )
-				                              tidsenhed tidsgraense interrupt-get-move)
+				                              tidsenhed tidsgraense interrupt-get-move
+							    )
 			              continue-going (:continue-going go-loop-result-player)
 			              move (infection-utils-aiamg/get-user-move specialiserede-grafikmodul interrupt-get-move)
 			              _ (reset! continue-going false)
@@ -92,7 +84,8 @@
                                                                            (fn [v]
 									     (tegn-nedtaellinger 0 v tidsgraense)
 								           )
-                                                                           tidsenhed tidsgraense interrupt-get-move)
+                                                                           tidsenhed tidsgraense interrupt-get-move
+									 )
 				               ]
                                                (reset! continue-going-opponent (:continue-going go-loop-result-opponent))
 				          )
@@ -162,6 +155,8 @@
 		                            (update-board enheds-inddata)
 					    {:data ["Accepteret"]}
 					  )
+					  
+		{:data ["Fejl i data"]}
              )
         )
       )

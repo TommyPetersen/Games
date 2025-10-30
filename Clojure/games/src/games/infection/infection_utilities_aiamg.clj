@@ -55,7 +55,7 @@
 			   interrupt			; Atom til at afgoere om brugervalget skal afbrydes
             		 ]
   (let [
-	 kamera  (@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera)
+	 kamera (@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera)
 	 behandl-musehaendelse (fn [
 	                             musehaendelse
 				   ]

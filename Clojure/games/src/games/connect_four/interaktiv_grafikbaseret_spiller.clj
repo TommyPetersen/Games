@@ -9,154 +9,133 @@
   (:import [java.util.concurrent.locks ReentrantLock])
 )
 
-    ;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;;;                   ;;;
-    ;;; * Connect four  * ;;;
-    ;;;                   ;;;
-    ;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;                      ;;;
+    ;;; * Fire paa stribe  * ;;;
+    ;;;                      ;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defn new-player [player-number]
+(defn ny-spiller [spillernummer]
   (let [
-         camera (atom nil)
-	 window-width 800
-	 window-height 600
-	 base-frame (game-utils-aiamg/calculate-base-frame window-width window-height)
+         specialiserede-grafikmodul connect-four-utils-aiamg/specialiserede-grafikmodul
+	 vinduesbredde 800
+	 vindueshoejde 600
+	 base-frame (game-utils-aiamg/calculate-base-frame vinduesbredde vindueshoejde)
          cell-grid-coords (game-utils-aiamg/generate-cell-grid-coords 7 6 base-frame)
          border-coords (:border-coords cell-grid-coords)
          cell-coords (:cell-coords cell-grid-coords)
-	 board (atom (connect-four-utils-misc/empty-board 7))
-	 time-unit 1000
-	 time-limit 120000
-	 selected-cell-index (atom nil)
-	 mouse-over-cell-index (atom nil)
-	 mouse-over-cell-frame-color (atom nil)
-	 countdown-frame-left (game-utils-aiamg/calculate-aux-frame (:base-frame-left-border base-frame) (:left border-coords) (:top border-coords) (:bottom border-coords) 50 10 85 0)
- 	 countdown-frame-right (game-utils-aiamg/calculate-aux-frame (:right border-coords) (:base-frame-right-border base-frame) (:top border-coords) (:bottom border-coords) 10 50 85 0)
-	 countdown-frame-player (if (= player-number 1) countdown-frame-left countdown-frame-right)
-	 countdown-frame-opponent  (if (= player-number 1) countdown-frame-right countdown-frame-left)
-	 player-chip (if (= player-number 1) "*" "¤")
-	 opponent-chip (if (= player-number 1) "¤" "*")
+	 braet (atom (connect-four-utils-misc/empty-board 7))
+	 tidsenhed 1000
+	 tidsgraense 120000
+	 spillerbrik (if (= spillernummer 1) "*" "¤")
+	 modstanderbrik (if (= spillernummer 1) "¤" "*")
 	 continue-going-opponent (atom (atom false))
-	 sync-lock-graphics (ReentrantLock. )
 	 interrupt-get-move (atom false)
-	 show-game-score (fn [total-time-used-player total-time-used-opponent time-limit]
-	                   (game-utils-aiamg/gui-show-board @board @camera base-frame border-coords cell-coords [@selected-cell-index])
-			   (game-utils-aiamg/update-scene-from-cell-coords @board @camera cell-coords [@selected-cell-index] @mouse-over-cell-index @mouse-over-cell-frame-color)
-    			   (game-utils-aiamg/show-aux-frame @camera countdown-frame-player)
-			   (game-utils-aiamg/show-countdown @camera player-chip total-time-used-player time-limit (+ (:frame-x0 countdown-frame-player) 1) (+ (:frame-y0 countdown-frame-player) 1) (- (:frame-x1 countdown-frame-player) 1) (- (:frame-y1 countdown-frame-player) 1))
-    			   (game-utils-aiamg/show-aux-frame @camera countdown-frame-opponent)
-			   (game-utils-aiamg/show-countdown @camera opponent-chip total-time-used-opponent time-limit (+ (:frame-x0 countdown-frame-opponent) 1) (+ (:frame-y0 countdown-frame-opponent) 1) (- (:frame-x1 countdown-frame-opponent) 1) (- (:frame-y1 countdown-frame-opponent) 1))
-	                 )
-         get-user-move (fn [player-number]
+	 tegn-nedtaellinger (fn [
+	                          samlet-tid-for-spiller
+				  samlet-tid-for-modstander
+				  tidsgraense
+	                        ]
+			      ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
+			        (fn []
+		                  ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-spiller samlet-tid-for-spiller)
+				  ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-modstander samlet-tid-for-modstander)
+				  ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+				)
+				[]
+			      )
+			    )
+         hent-spillertraek (fn [spillernummer]
 			   (let [
 				  go-loop-result-player (game-utils-misc/go-loop-on-atom
-				                          (fn [v] (do
-				                                    (.lock sync-lock-graphics)
-				                                    (try
-				                                      (.clearRaster @camera)
-				                                      (show-game-score v 0 time-limit)
-				    	                              (.showScene @camera)
-				    	                              (finally
-				                                        (.unlock sync-lock-graphics)
-				                                      )
-				                                    )
-				                                  )
-				                          )
-				                          time-unit time-limit interrupt-get-move)
+				                          (fn [v]
+					                    (tegn-nedtaellinger v 0 tidsgraense)
+						          )
+				                          tidsenhed tidsgraense interrupt-get-move
+							)
 			          continue-going (:continue-going go-loop-result-player)
-			  	  j (connect-four-utils-aiamg/get-user-move @board @camera window-width window-height border-coords cell-coords sync-lock-graphics selected-cell-index mouse-over-cell-index mouse-over-cell-frame-color interrupt-get-move)
+			  	  j (connect-four-utils-aiamg/get-user-move specialiserede-grafikmodul interrupt-get-move)
 			          _ (reset! continue-going false)
 			        ]
-			        (if (connect-four-utils-misc/column-valid? @board 7 6 j)
+			        (if (connect-four-utils-misc/column-valid? @braet 7 6 j)
 				  (do
-				    (reset! selected-cell-index {:row-index 5 :column-index j})
-				    (swap! board connect-four-utils-misc/insert j player-chip)
-				    (if (connect-four-utils-misc/is-not-full? @board 6)
+				    (swap! braet connect-four-utils-misc/insert j spillerbrik)
+				    ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
+				      (fn []
+				        ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :braet @braet)
+				      )
+				      []
+				    )
+				    (if (connect-four-utils-misc/is-not-full? @braet 6)
 				      (let [
 				             go-loop-result-opponent (game-utils-misc/go-loop-on-atom
-				                                       (fn [v] (do
-				                                                 (.lock sync-lock-graphics)
-				                                                 (try
-				                                                   (.clearRaster @camera)
-				                                                   (show-game-score 0 v time-limit)
-				    	                                           (.showScene @camera)
-				    	                                           (finally
-				                                                     (.unlock sync-lock-graphics)
-				                                                   )
-				                                                 )
-				                                               )
-				                                       )
-				                                       time-unit time-limit interrupt-get-move)
+                                                                       (fn [v]
+								         (tegn-nedtaellinger 0 v tidsgraense)
+								       )
+                                                                       tidsenhed tidsgraense interrupt-get-move
+								     )
 				           ]
 				           (reset! continue-going-opponent (:continue-going go-loop-result-opponent))
 				      )
-				      (do
-				        (.lock sync-lock-graphics)
-				        (try
-				          (.clearRaster @camera)
-				          (show-game-score 0 0 time-limit)
-				    	  (.showScene @camera)
-				    	  (finally
-				            (.unlock sync-lock-graphics)
-				          )
-				        )
-				      )
+				      (tegn-nedtaellinger 0 0 tidsgraense)
 				    )
 				  )
 				)
 				j
 			   )
 		       )
-	 update-board (fn [unit-input]
+	 update-board (fn [enheds-inddata]
 	                  (let [
-		                 move-string (nth (:data unit-input) 1)
+		                 move-string (nth (:data enheds-inddata) 1)
 				 j (Integer/parseInt move-string)
 			       ]
 			       (reset! @continue-going-opponent false)
-			       (if (connect-four-utils-misc/column-valid? @board 7 6 j)
+			       (if (connect-four-utils-misc/column-valid? @braet 7 6 j)
 			         (do
-				   (swap! board connect-four-utils-misc/insert j opponent-chip)
+				   (swap! braet connect-four-utils-misc/insert j modstanderbrik)
+				   ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
+				     (fn []
+				       ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :braet @braet)
+				     )
+				     []
+				   )
 				 )
 			       )
-			       (.lock sync-lock-graphics)
-			       (try
-			         (.clearRaster @camera)
-				 (reset! selected-cell-index {:row-index 5 :column-index j})
-				 (show-game-score 0 0 time-limit)
-				 (.showScene @camera)
-				 (finally
-				   (.unlock sync-lock-graphics)
+			       ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
+			         (fn []
+			           ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [{:row-index 5 :column-index j}])
+			           ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-spiller 0)
+			           ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-modstander 0)
+				   ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+				   ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [])
 				 )
+				 []
 			       )
 			  )
 		      )
        ]
-       (fn [unit-input]
-         (let [first-data-element (first (:data unit-input))]
+       (fn [enheds-inddata]
+         (let [first-data-element (first (:data enheds-inddata))]
              (case first-data-element
 	        "initialiserSpil"	  (do
-		                            (reset! camera (game-utils-aiamg/new-camera window-width window-height))
-		                            (reset! board (connect-four-utils-misc/empty-board 7))
-			                    (.lock sync-lock-graphics)
-			                    (try
-			                      (.clearRaster @camera)
-				              (reset! selected-cell-index nil)
-				              (show-game-score 0 0 time-limit)
-				              (.showScene @camera)
-				              (finally
-				                (.unlock sync-lock-graphics)
-				              )
-			                    )
+				            (reset! braet (connect-four-utils-misc/empty-board 7))
+					    ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
+			                      (fn []
+		                                ((@(specialiserede-grafikmodul :funktionalitet) :fastsaet-tilstand) @braet spillernummer vinduesbredde vindueshoejde 7 6 [50 10 85 0] [10 50 85 0] 120000)
+					        ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+					      )
+					      []
+					    )
 					    {:data ["Ok"]}
 					  )
-                "hentFoersteTraek"          {:data [(str (get-user-move player-number))]}
+                "hentFoersteTraek"        {:data [(str (hent-spillertraek spillernummer))]}
                 "hentNaesteTraek"         (do
-		                            (update-board unit-input)
-		                            {:data [(str (get-user-move player-number))]}
+		                            (update-board enheds-inddata)
+		                            {:data [(str (hent-spillertraek spillernummer))]}
 					  )
                 "meddelTraek"             (do
-		                            (update-board unit-input)
+		                            (update-board enheds-inddata)
 					    {:data ["Accepteret"]}
 					  )
 					  
@@ -168,6 +147,6 @@
 )
 
 
-(def spiller1 (new-player 1))
-(def spiller2 (new-player 2))
+(def spiller1 (ny-spiller 1))
+(def spiller2 (ny-spiller 2))
 
