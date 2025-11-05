@@ -374,8 +374,6 @@
                           :valgte-celler-indekseret nil
                           :fokuseret-celle-indekseret nil
                           :fokuseret-celle-rammefarve nil
-                          :nedtaellingsramme-venstre nil
-                          :nedtaellingsramme-hoejre nil
                           :nedtaellingsramme-spiller nil
                           :nedtaellingsramme-modstander nil
 			  :samlet-tid-for-spiller nil
@@ -420,8 +418,6 @@
 								  	     :valgte-celler-indekseret []
 									     :fokuseret-celle-indekseret nil
 									     :fokuseret-celle-rammefarve nil
-									     :nedtaellingsramme-venstre nedtaellingsramme-venstre
-									     :nedtaellingsramme-hoejre nedtaellingsramme-hoejre
 									     :nedtaellingsramme-spiller nedtaellingsramme-spiller
 									     :nedtaellingsramme-modstander nedtaellingsramme-modstander
 									     :samlet-tid-for-spiller samlet-tid-for-spiller
