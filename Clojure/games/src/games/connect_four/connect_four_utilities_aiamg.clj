@@ -2,62 +2,53 @@
   (:require (games [game-utilities-aiamg :as game-utils-aiamg]))
   (:require (games.connect-four [connect-four-utilities-misc :as connect-four-utils-misc]))
   (:import (java.awt Color))
-  (:import (java.awt.event MouseEvent))
+  (:import (java.awt.event MouseEvent MouseAdapter))
+)
+
+(defn ny-musehaendelsesbehandler [specialiserede-grafikmodul]
+  (fn [musehaendelse]
+    (if (not= nil musehaendelse)
+      (if (= (.getButton musehaendelse) MouseEvent/BUTTON1)
+        ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
+          (fn []
+	    ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :vaelg-fokuseret-celle))
+	    ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+	  )
+	  []
+        )
+      )
+    )
+  )
+)
+
+(defn ny-musebevaegelsehaendelsesbehandler [specialiserede-grafikmodul]
+  (fn [musebevaegelseshaendelse]
+    ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
+      (fn []
+        ((@(specialiserede-grafikmodul :funktionalitet) :fokuser-paa-celle) musebevaegelseshaendelse)
+        ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+      )
+      []
+    )
+  )
 )
 
 (defn get-user-move [
 		      specialiserede-grafikmodul	; Specialiseret grafikmodul
-		      interrupt
+		      afbryd
 		    ]
-  (let [
-	 kamera (@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera)
-	 behandl-musehaendelse (fn [
-	                             musehaendelse
-				   ]
-				 (if (not= nil musehaendelse)
-			           (if (= (.getButton musehaendelse) MouseEvent/BUTTON1)
-				     ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
-				       (fn []
-				         ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :vaelg-fokuseret-celle))
-				         ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
-				       )
-				       []
-				     )
-				   )
-				 )
-				 ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :hent-valgte-celler))
-			       )
-	 behandl-musebevaegelseshaendelse (fn [
-	                                        musebevaegelseshaendelse
-				              ]
-					    ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
-					      (fn []
-				                ((@(specialiserede-grafikmodul :funktionalitet) :fokuser-paa-celle) musebevaegelseshaendelse)
-				                ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
-					      )
-					      []
-				            )
-					  )
-	 find-celler-fn (fn []
-	                  (loop [
-			          valgte-celler (behandl-musehaendelse (.getCurrentMouseEventOnScreen kamera))
-			        ]
-			        (Thread/sleep 250)
-			        (if @interrupt
-			          -1
-				  (if (>= (count valgte-celler) 1)
-				    (:column-index (first valgte-celler))
-				    (do
-				      (behandl-musebevaegelseshaendelse (.getCurrentMouseMovedEventOnScreen kamera))
-				      (recur (behandl-musehaendelse (.getCurrentMouseEventOnScreen kamera)))
-				    )
-			          )
-			        )
-			   )
-	                 )
-       ]
-       (find-celler-fn)
- )
+  (loop [
+  	  valgte-celler ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :hent-valgte-celler))
+	]
+	(Thread/sleep 10)
+	(if @afbryd
+	  -1
+	  (if (>= (count valgte-celler) 1)
+	    (:column-index (first valgte-celler))
+	    (recur ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :hent-valgte-celler)))
+	  )
+	)
+  )
 )
 
 ;;; Specialiseret grafikmodul ;;;

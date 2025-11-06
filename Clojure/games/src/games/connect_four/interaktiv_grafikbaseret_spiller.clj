@@ -7,6 +7,7 @@
     	    [clojure.string :as str]
   )
   (:import [java.util.concurrent.locks ReentrantLock])
+  (:import (java.awt.event MouseAdapter))
 )
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -30,8 +31,9 @@
 	 tidsgraense 120000
 	 spillerbrik (if (= spillernummer 1) "*" "¤")
 	 modstanderbrik (if (= spillernummer 1) "¤" "*")
-	 continue-going-opponent (atom (atom false))
-	 interrupt-get-move (atom false)
+	 fortsaet-nedtaelling-for-modstander (atom (atom false))
+	 skal-hent-traek-afbrydes (atom false)
+	 behandl-alle-musehaendelsestyper (atom false)
 	 tegn-nedtaellinger (fn [
 	                          samlet-tid-for-spiller
 				  samlet-tid-for-modstander
@@ -47,72 +49,77 @@
 			      )
 			    )
          hent-spillertraek (fn [spillernummer]
-			   (let [
-				  go-loop-result-player (game-utils-misc/go-loop-on-atom
-				                          (fn [v]
-					                    (tegn-nedtaellinger v 0 tidsgraense)
-						          )
-				                          tidsenhed tidsgraense interrupt-get-move
-							)
-			          continue-going (:continue-going go-loop-result-player)
-			  	  j (connect-four-utils-aiamg/get-user-move specialiserede-grafikmodul interrupt-get-move)
-			          _ (reset! continue-going false)
-			        ]
-			        (if (connect-four-utils-misc/column-valid? @braet 7 6 j)
-				  (do
-				    (swap! braet connect-four-utils-misc/insert j spillerbrik)
-				    ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
-				      (fn []
-				        ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :braet @braet)
+			     (let [
+				    go-loop-result-player (game-utils-misc/go-loop-on-atom
+				                            (fn [v]
+					                      (tegn-nedtaellinger v 0 tidsgraense)
+						            )
+				                            tidsenhed tidsgraense skal-hent-traek-afbrydes
+							  )
+			            fortsaet-nedtaelling-for-spiller (:continue-going go-loop-result-player)
+			            _ (reset! behandl-alle-musehaendelsestyper true)
+			  	    j (connect-four-utils-aiamg/get-user-move specialiserede-grafikmodul skal-hent-traek-afbrydes)
+			            _ (reset! behandl-alle-musehaendelsestyper false)
+				    _ ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [])
+				    _ ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :fokuseret-celle-indekseret nil)
+				    _ ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :fokuseret-celle-rammefarve nil)
+			            _ (reset! fortsaet-nedtaelling-for-spiller false)
+			          ]
+			          (if (connect-four-utils-misc/column-valid? @braet 7 6 j)
+				    (do
+				      (swap! braet connect-four-utils-misc/insert j spillerbrik)
+				      ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
+				        (fn []
+				          ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :braet @braet)
+				        )
+				        []
 				      )
-				      []
-				    )
-				    (if (connect-four-utils-misc/is-not-full? @braet 6)
-				      (let [
-				             go-loop-result-opponent (game-utils-misc/go-loop-on-atom
-                                                                       (fn [v]
-								         (tegn-nedtaellinger 0 v tidsgraense)
+				      (if (connect-four-utils-misc/is-not-full? @braet 6)
+				        (let [
+				               go-loop-result-opponent (game-utils-misc/go-loop-on-atom
+                                                                         (fn [v]
+								           (tegn-nedtaellinger 0 v tidsgraense)
+								         )
+                                                                         tidsenhed tidsgraense skal-hent-traek-afbrydes
 								       )
-                                                                       tidsenhed tidsgraense interrupt-get-move
-								     )
-				           ]
-				           (reset! continue-going-opponent (:continue-going go-loop-result-opponent))
+				             ]
+				             (reset! fortsaet-nedtaelling-for-modstander (:continue-going go-loop-result-opponent))
+				        )
+				        (tegn-nedtaellinger 0 0 tidsgraense)
 				      )
-				      (tegn-nedtaellinger 0 0 tidsgraense)
 				    )
 				  )
-				)
-				j
-			   )
-		       )
+				  j
+			     )
+		         )
 	 update-board (fn [enheds-inddata]
-	                  (let [
-		                 move-string (nth (:data enheds-inddata) 1)
-				 j (Integer/parseInt move-string)
-			       ]
-			       (reset! @continue-going-opponent false)
-			       (if (connect-four-utils-misc/column-valid? @braet 7 6 j)
-			         (do
-				   (swap! braet connect-four-utils-misc/insert j modstanderbrik)
-				   ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
-				     (fn []
-				       ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :braet @braet)
-				     )
-				     []
+	                (let [
+		               move-string (nth (:data enheds-inddata) 1)
+			       j (Integer/parseInt move-string)
+			     ]
+			     (reset! @fortsaet-nedtaelling-for-modstander false)
+			     (if (connect-four-utils-misc/column-valid? @braet 7 6 j)
+			       (do
+			         (swap! braet connect-four-utils-misc/insert j modstanderbrik)
+				 ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
+				   (fn []
+				     ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :braet @braet)
 				   )
+				   []
 				 )
 			       )
-			       ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
-			         (fn []
-			           ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [{:row-index 5 :column-index j}])
-			           ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-spiller 0)
-			           ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-modstander 0)
-				   ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
-				   ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [])
-				 )
-				 []
+			     )
+			     ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
+			       (fn []
+			         ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [{:row-index 5 :column-index j}])
+			         ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-spiller 0)
+			         ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-modstander 0)
+			         ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+				 ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [])
 			       )
-			  )
+			       []
+			     )
+			)
 		      )
        ]
        (fn [enheds-inddata]
@@ -127,6 +134,28 @@
 					      )
 					      []
 					    )
+					    (let [
+					           fn-behandl-musehaendelse (connect-four-utils-aiamg/ny-musehaendelsesbehandler specialiserede-grafikmodul)
+	                                           fn-behandl-musebevaegelseshaendelse (connect-four-utils-aiamg/ny-musebevaegelsehaendelsesbehandler specialiserede-grafikmodul)
+	                                           skaerm (.getScreen (@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera))
+						 ]
+                                                 (.addMouseListener skaerm (proxy [MouseAdapter] []
+       	                                                                     (mouseClicked [musehaendelse]
+									       (if @behandl-alle-musehaendelsestyper
+				                                                 (fn-behandl-musehaendelse musehaendelse)
+									       )
+				                                             )
+	                                                                   )
+                                                 )
+                                                 (.addMouseMotionListener skaerm (proxy [MouseAdapter] []
+       	                                                                           (mouseMoved [musebevaegelseshaendelse]
+										     (if @behandl-alle-musehaendelsestyper
+				                                                       (fn-behandl-musebevaegelseshaendelse musebevaegelseshaendelse)
+										     )
+				                                                   )
+	                                                                         )
+                                                 )
+				            )
 					    {:data ["Ok"]}
 					  )
                 "hentFoersteTraek"        {:data [(str (hent-spillertraek spillernummer))]}
