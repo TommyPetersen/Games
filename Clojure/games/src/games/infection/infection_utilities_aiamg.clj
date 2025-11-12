@@ -49,69 +49,59 @@
   )
 )
 
-(defn get-user-selection ; {:from-cell from-cell :to-cell to-cell}
-            		 [
+(defn ny-musehaendelsesbehandler [specialiserede-grafikmodul]
+  (fn [musehaendelse]
+    (if (not= nil musehaendelse)
+      (if (= (.getButton musehaendelse) MouseEvent/BUTTON1)
+	((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
+	  (fn []
+	    ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :vaelg-fokuseret-celle))
+	    ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+	  )
+	  []
+	)
+	(if (= (.getButton musehaendelse) MouseEvent/BUTTON3)
+	  ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
+	    (fn []
+	      ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :fravaelg-alle-valgte-celler))
+	      ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+	    )
+	    []
+	  )
+	)
+      )
+    )
+  )
+)
+
+(defn ny-musebevaegelsehaendelsesbehandler [specialiserede-grafikmodul]
+  (fn [musebevaegelseshaendelse]
+    ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
+      (fn []
+	((@(specialiserede-grafikmodul :funktionalitet) :fokuser-paa-celle) musebevaegelseshaendelse)
+	((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+      )
+      []
+    )
+  )
+)
+
+(defn get-user-selection [ ; {:from-cell from-cell :to-cell to-cell}
 			   specialiserede-grafikmodul	; Specialiseret grafikmodul
 			   interrupt			; Atom til at afgoere om brugervalget skal afbrydes
             		 ]
-  (let [
-	 kamera (@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera)
-	 behandl-musehaendelse (fn [
-	                             musehaendelse
-				   ]
-				 (if (not= nil musehaendelse)
-			           (if (= (.getButton musehaendelse) MouseEvent/BUTTON1)
-				     ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
-				       (fn []
-				         ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :vaelg-fokuseret-celle))
-				         ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
-				       )
-				       []
-				     )
-				     (if (= (.getButton musehaendelse) MouseEvent/BUTTON3)
-				       ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
-				         (fn []
-				           ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :fravaelg-alle-valgte-celler))
-				           ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
-					 )
-					 []
-				       )
-				     )
-				   )
-				 )
-				 ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :hent-valgte-celler))
-			       )
-	 behandl-musebevaegelseshaendelse (fn [
-	                                        musebevaegelseshaendelse
-				              ]
-					    ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
-					      (fn []
-				                ((@(specialiserede-grafikmodul :funktionalitet) :fokuser-paa-celle) musebevaegelseshaendelse)
-				                ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
-					      )
-					      []
-				            )
-					  )
-	 find-celler-fn (fn []
-	                  (loop [
-			          valgte-celler (behandl-musehaendelse (.getCurrentMouseEventOnScreen kamera))
-			        ]
-			        (Thread/sleep 250)
-			        (if @interrupt
-			          {:from-cell {:row-index -1 :column-index -1} :to-cell {:row-index -1 :column-index -1}}
-				  (if (>= (count valgte-celler) 2)
-				    {:from-cell (first valgte-celler) :to-cell (last valgte-celler)}
-				    (do
-				      (behandl-musebevaegelseshaendelse (.getCurrentMouseMovedEventOnScreen kamera))
-				      (recur (behandl-musehaendelse (.getCurrentMouseEventOnScreen kamera)))
-				    )
-			          )
-			        )
-			   )
-	                 )
-       ]
-       (find-celler-fn)
- )
+  (loop [
+          valgte-celler ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :hent-valgte-celler))
+	]
+	(Thread/sleep 10)
+	(if @interrupt
+	  {:from-cell {:row-index -1 :column-index -1} :to-cell {:row-index -1 :column-index -1}}
+	  (if (>= (count valgte-celler) 2)
+	    {:from-cell (first valgte-celler) :to-cell (last valgte-celler)}
+	    (recur ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :hent-valgte-celler)))
+	  )
+	)
+  )
 )
 
 (defn get-user-move [

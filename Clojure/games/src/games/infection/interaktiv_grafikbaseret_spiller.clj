@@ -8,6 +8,7 @@
 	    [clojure.edn :as edn]
   )
   (:import [java.util.concurrent.locks ReentrantLock])
+  (:import (java.awt.event MouseAdapter))
 )
 
 
@@ -34,8 +35,9 @@
 	 historiklaengde 15
 	 spillerbrik (if (= spillernummer 1) "*" "¤")
 	 modstanderbrik (if (= spillernummer 1) "¤" "*")
-	 continue-going-opponent (atom (atom false))
-	 interrupt-get-move (atom false)
+	 fortsaet-nedtaelling-for-modstander (atom (atom false))
+	 skal-hent-traek-afbrydes (atom false)
+	 behandl-alle-musehaendelsestyper (atom false)
 	 tegn-nedtaellinger (fn [
 	                          samlet-tid-for-spiller
 				  samlet-tid-for-modstander
@@ -61,11 +63,16 @@
 				                              (fn [v]
 					                        (tegn-nedtaellinger v 0 tidsgraense)
 						              )
-				                              tidsenhed tidsgraense interrupt-get-move
+				                              tidsenhed tidsgraense skal-hent-traek-afbrydes
 							    )
-			              continue-going (:continue-going go-loop-result-player)
-			              move (infection-utils-aiamg/get-user-move specialiserede-grafikmodul interrupt-get-move)
-			              _ (reset! continue-going false)
+			              fortsaet-nedtaelling-for-spiller (:continue-going go-loop-result-player)
+				      _ (reset! behandl-alle-musehaendelsestyper true)
+			              move (infection-utils-aiamg/get-user-move specialiserede-grafikmodul skal-hent-traek-afbrydes)
+				      _ (reset! behandl-alle-musehaendelsestyper false)
+				      _ ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [])
+                                      _ ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :fokuseret-celle-indekseret nil)
+                                      _ ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :fokuseret-celle-rammefarve nil)
+			              _ (reset! fortsaet-nedtaelling-for-spiller false)
 				    ]
 			            (if (infection-utils-misc/move-valid? @braet spillerbrik move)
 				      (do
@@ -84,10 +91,10 @@
                                                                            (fn [v]
 									     (tegn-nedtaellinger 0 v tidsgraense)
 								           )
-                                                                           tidsenhed tidsgraense interrupt-get-move
+                                                                           tidsenhed tidsgraense skal-hent-traek-afbrydes
 									 )
 				               ]
-                                               (reset! continue-going-opponent (:continue-going go-loop-result-opponent))
+                                               (reset! fortsaet-nedtaelling-for-modstander (:continue-going go-loop-result-opponent))
 				          )
 					  (tegn-nedtaellinger 0 0 tidsgraense)
 				        )
@@ -104,7 +111,7 @@
 				 from-cell {:row-index (second (:from-coord move)) :column-index (first (:from-coord move))}
 				 to-cell {:row-index (second (:to-coord move)) :column-index (first (:to-coord move))}
 			       ]
-			       (reset! @continue-going-opponent false)
+			       (reset! @fortsaet-nedtaelling-for-modstander false)
 			       (if (infection-utils-misc/move-valid? @braet modstanderbrik move)
 			         (do
 			           (swap! braet infection-utils-misc/make-move move)
@@ -144,6 +151,28 @@
 					      )
 					      []
 					    )
+					    (let [
+                                                   fn-behandl-musehaendelse (infection-utils-aiamg/ny-musehaendelsesbehandler specialiserede-grafikmodul)
+                                                   fn-behandl-musebevaegelseshaendelse (infection-utils-aiamg/ny-musebevaegelsehaendelsesbehandler specialiserede-grafikmodul)
+                                                   skaerm (.getScreen (@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera))
+                                                 ]
+                                                 (.addMouseListener skaerm (proxy [MouseAdapter] []
+                                                                             (mouseClicked [musehaendelse]
+                                                                               (if @behandl-alle-musehaendelsestyper
+                                                                                 (fn-behandl-musehaendelse musehaendelse)
+                                                                               )
+                                                                             )
+                                                                           )
+                                                 )
+                                                 (.addMouseMotionListener skaerm (proxy [MouseAdapter] []
+                                                                                   (mouseMoved [musebevaegelseshaendelse]
+                                                                                     (if @behandl-alle-musehaendelsestyper
+                                                                                       (fn-behandl-musebevaegelseshaendelse musebevaegelseshaendelse)
+                                                                                     )
+                                                                                   )
+                                                                                 )
+                                                 )
+                                            )
 					    {:data ["Ok"]}
 					  )
                 "hentFoersteTraek"        {:data [(str (hent-spillertraek spillernummer))]}
