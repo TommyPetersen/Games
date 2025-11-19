@@ -1,11 +1,15 @@
 (ns games.connect-four.connect-four-utilities-aiamg
+  (:require [clojure.core.async :refer [go >!]])
   (:require (games [game-utilities-aiamg :as game-utils-aiamg]))
   (:require (games.connect-four [connect-four-utilities-misc :as connect-four-utils-misc]))
   (:import (java.awt Color))
   (:import (java.awt.event MouseEvent MouseAdapter))
 )
 
-(defn ny-musehaendelsesbehandler [specialiserede-grafikmodul]
+(defn ny-musehaendelsesbehandler [
+                                   specialiserede-grafikmodul
+				   kanal			; atom
+				 ]
   (fn [musehaendelse]
     (if (not= nil musehaendelse)
       (if (= (.getButton musehaendelse) MouseEvent/BUTTON1)
@@ -17,6 +21,9 @@
 	  []
         )
       )
+    )
+    (let [valgte-celler ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :hent-valgte-celler))]
+      (if (>= (count valgte-celler) 1) (go (>! @kanal (:column-index (first valgte-celler)))))
     )
   )
 )
@@ -30,24 +37,6 @@
       )
       []
     )
-  )
-)
-
-(defn get-user-move [
-		      specialiserede-grafikmodul	; Specialiseret grafikmodul
-		      afbryd
-		    ]
-  (loop [
-  	  valgte-celler ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :hent-valgte-celler))
-	]
-	(Thread/sleep 10)
-	(if @afbryd
-	  -1
-	  (if (>= (count valgte-celler) 1)
-	    (:column-index (first valgte-celler))
-	    (recur ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :hent-valgte-celler)))
-	  )
-	)
   )
 )
 

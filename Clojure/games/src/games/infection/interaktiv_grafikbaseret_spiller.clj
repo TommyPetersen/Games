@@ -6,6 +6,7 @@
 	                     [infection-utilities-misc :as infection-utils-misc])
     	    [clojure.string :as str]
 	    [clojure.edn :as edn]
+	    [clojure.core.async :refer [go <!! timeout]]
   )
   (:import [java.util.concurrent.locks ReentrantLock])
   (:import (java.awt.event MouseAdapter))
@@ -38,6 +39,7 @@
 	 fortsaet-nedtaelling-for-modstander (atom (atom false))
 	 skal-hent-traek-afbrydes (atom false)
 	 behandl-alle-musehaendelsestyper (atom false)
+	 kanal-til-hent-spillertraek (atom nil)
 	 tegn-nedtaellinger (fn [
 	                          samlet-tid-for-spiller
 				  samlet-tid-for-modstander
@@ -67,7 +69,13 @@
 							    )
 			              fortsaet-nedtaelling-for-spiller (:continue-going go-loop-result-player)
 				      _ (reset! behandl-alle-musehaendelsestyper true)
-			              move (infection-utils-aiamg/get-user-move specialiserede-grafikmodul skal-hent-traek-afbrydes)
+				      _ (reset! kanal-til-hent-spillertraek (timeout tidsgraense))
+				      move (let [hentet-spillertraek (<!! @kanal-til-hent-spillertraek)]
+				             (if (= hentet-spillertraek nil)
+					       {:from-cell {:row-index -1 :column-index -1} :to-cell {:row-index -1 :column-index -1}}
+					       hentet-spillertraek
+					     )
+					   )
 				      _ (reset! behandl-alle-musehaendelsestyper false)
 				      _ ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [])
                                       _ ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :fokuseret-celle-indekseret nil)
@@ -151,8 +159,9 @@
 					      )
 					      []
 					    )
+					    (reset! kanal-til-hent-spillertraek (timeout tidsgraense))
 					    (let [
-                                                   fn-behandl-musehaendelse (infection-utils-aiamg/ny-musehaendelsesbehandler specialiserede-grafikmodul)
+                                                   fn-behandl-musehaendelse (infection-utils-aiamg/ny-musehaendelsesbehandler specialiserede-grafikmodul kanal-til-hent-spillertraek)
                                                    fn-behandl-musebevaegelseshaendelse (infection-utils-aiamg/ny-musebevaegelsehaendelsesbehandler specialiserede-grafikmodul)
                                                    skaerm (.getScreen (@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera))
                                                  ]

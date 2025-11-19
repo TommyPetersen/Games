@@ -1,4 +1,5 @@
 (ns games.infection.infection-utilities-aiamg
+  (:require [clojure.core.async :refer [go >!]])
   (:require (games [game-utilities-aiamg :as game-utils-aiamg])
             (games.infection [infection-utilities-misc :as infection-utils-misc]))
   (:import (java.awt Color))
@@ -49,16 +50,27 @@
   )
 )
 
-(defn ny-musehaendelsesbehandler [specialiserede-grafikmodul]
+(defn ny-musehaendelsesbehandler [
+                                   specialiserede-grafikmodul
+				   kanal			; atom
+				 ]
   (fn [musehaendelse]
     (if (not= nil musehaendelse)
       (if (= (.getButton musehaendelse) MouseEvent/BUTTON1)
-	((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
-	  (fn []
-	    ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :vaelg-fokuseret-celle))
-	    ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+        (do
+	  ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
+	    (fn []
+	      ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :vaelg-fokuseret-celle))
+	      ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+	    )
+	    []
 	  )
-	  []
+	  (let [valgte-celler ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :hent-valgte-celler))]
+            (if (>= (count valgte-celler) 2)
+	      (go (>! @kanal {:from-coord [(:column-index (first valgte-celler)) (:row-index (first valgte-celler))]
+	                      :to-coord [(:column-index (second valgte-celler)) (:row-index (second valgte-celler))]}))
+            )
+	  )
 	)
 	(if (= (.getButton musehaendelse) MouseEvent/BUTTON3)
 	  ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
@@ -83,38 +95,6 @@
       )
       []
     )
-  )
-)
-
-(defn get-user-selection [ ; {:from-cell from-cell :to-cell to-cell}
-			   specialiserede-grafikmodul	; Specialiseret grafikmodul
-			   interrupt			; Atom til at afgoere om brugervalget skal afbrydes
-            		 ]
-  (loop [
-          valgte-celler ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :hent-valgte-celler))
-	]
-	(Thread/sleep 10)
-	(if @interrupt
-	  {:from-cell {:row-index -1 :column-index -1} :to-cell {:row-index -1 :column-index -1}}
-	  (if (>= (count valgte-celler) 2)
-	    {:from-cell (first valgte-celler) :to-cell (last valgte-celler)}
-	    (recur ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :hent-valgte-celler)))
-	  )
-	)
-  )
-)
-
-(defn get-user-move [
-		      specialiserede-grafikmodul	; Specialiseret grafikmodul
-		      interrupt
-		    ]
-  (let [
-         selected-move (get-user-selection specialiserede-grafikmodul interrupt)
-       ]
-       {
-         :from-coord [(:column-index (:from-cell selected-move)) (:row-index (:from-cell selected-move))]
-         :to-coord [(:column-index (:to-cell selected-move)) (:row-index (:to-cell selected-move))]
-       }
   )
 )
 

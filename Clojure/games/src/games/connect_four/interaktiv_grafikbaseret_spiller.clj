@@ -5,6 +5,7 @@
             (games.connect-four [connect-four-utilities-aiamg :as connect-four-utils-aiamg]
                                 [connect-four-utilities-misc :as connect-four-utils-misc])
     	    [clojure.string :as str]
+	    [clojure.core.async :refer [go <!! timeout]]
   )
   (:import [java.util.concurrent.locks ReentrantLock])
   (:import (java.awt.event MouseAdapter))
@@ -34,6 +35,7 @@
 	 fortsaet-nedtaelling-for-modstander (atom (atom false))
 	 skal-hent-traek-afbrydes (atom false)
 	 behandl-alle-musehaendelsestyper (atom false)
+	 kanal-til-hent-spillertraek (atom nil)
 	 tegn-nedtaellinger (fn [
 	                          samlet-tid-for-spiller
 				  samlet-tid-for-modstander
@@ -58,7 +60,8 @@
 							  )
 			            fortsaet-nedtaelling-for-spiller (:continue-going go-loop-result-player)
 			            _ (reset! behandl-alle-musehaendelsestyper true)
-			  	    j (connect-four-utils-aiamg/get-user-move specialiserede-grafikmodul skal-hent-traek-afbrydes)
+				    _ (reset! kanal-til-hent-spillertraek (timeout tidsgraense))
+				    j (let [i (<!! @kanal-til-hent-spillertraek)] (if (= i nil) -1 i))
 			            _ (reset! behandl-alle-musehaendelsestyper false)
 				    _ ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [])
 				    _ ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :fokuseret-celle-indekseret nil)
@@ -134,8 +137,9 @@
 					      )
 					      []
 					    )
+					    (reset! kanal-til-hent-spillertraek (timeout tidsgraense))
 					    (let [
-					           fn-behandl-musehaendelse (connect-four-utils-aiamg/ny-musehaendelsesbehandler specialiserede-grafikmodul)
+					           fn-behandl-musehaendelse (connect-four-utils-aiamg/ny-musehaendelsesbehandler specialiserede-grafikmodul kanal-til-hent-spillertraek)
 	                                           fn-behandl-musebevaegelseshaendelse (connect-four-utils-aiamg/ny-musebevaegelsehaendelsesbehandler specialiserede-grafikmodul)
 	                                           skaerm (.getScreen (@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera))
 						 ]
