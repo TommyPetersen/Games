@@ -8,7 +8,6 @@
 	    [clojure.edn :as edn]
 	    [clojure.core.async :refer [go <!! timeout]]
   )
-  (:import [java.util.concurrent.locks ReentrantLock])
   (:import (java.awt.event MouseAdapter))
 )
 
