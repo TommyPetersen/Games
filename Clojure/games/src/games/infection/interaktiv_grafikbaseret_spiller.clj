@@ -44,13 +44,10 @@
 				  samlet-tid-for-modstander
 				  tidsgraense
 	                        ]
-			      ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
-			        (fn []
-		                  ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-spiller samlet-tid-for-spiller)
-				  ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-modstander samlet-tid-for-modstander)
-				  ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
-				)
-				[]
+			      (dosync
+		                ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-spiller samlet-tid-for-spiller)
+				((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-modstander samlet-tid-for-modstander)
+				((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
 			      )
 			    )
          hent-spillertraek (fn [spillernummer]
@@ -85,12 +82,9 @@
 				      (do
 				        (swap! braet infection-utils-misc/make-move move)
 				        (swap! braethistorik conj @braet)
-					((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
-					  (fn []
+					(dosync
 					    ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :braet @braet)
 					    ((@(specialiserede-grafikmodul :funktionalitet) :opdater-tilstand) :braethistorik @braethistorik)
-					  )
-					  []
 					)
 				        (if (infection-utils-misc/can-move? @braet modstanderbrik)
 				          (let [
@@ -123,24 +117,18 @@
 			         (do
 			           (swap! braet infection-utils-misc/make-move move)
 				   (swap! braethistorik conj @braet)
-				   ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
-				     (fn []
-				       ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :braet @braet)
-				       ((@(specialiserede-grafikmodul :funktionalitet) :opdater-tilstand) :braethistorik @braethistorik)
-				     )
-				     []
+				   (dosync
+				     ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :braet @braet)
+				     ((@(specialiserede-grafikmodul :funktionalitet) :opdater-tilstand) :braethistorik @braethistorik)
 				   )
 				 )
 			       )
-			       ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
-			         (fn []
-			           ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [{:row-index (second (:from-coord move)) :column-index (first (:from-coord move))} {:row-index (second (:to-coord move)) :column-index (first (:to-coord move))}])
-			           ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-spiller 0)
-			           ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-modstander 0)
-				   ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
-				   ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [])
-				 )
-				 []
+			       (dosync
+			         ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [{:row-index (second (:from-coord move)) :column-index (first (:from-coord move))} {:row-index (second (:to-coord move)) :column-index (first (:to-coord move))}])
+			         ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-spiller 0)
+			         ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-modstander 0)
+				 ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+				 ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [])
 			       )
 			  )
 		      )
@@ -151,12 +139,9 @@
 	        "initialiserSpil"	  (do
 		                            (reset! braet (infection-utils-misc/init-board "*" "¤"))
 					    (reset! braethistorik [@braet])
-					    ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
-			                      (fn []
-		                                ((@(specialiserede-grafikmodul :funktionalitet) :fastsaet-tilstand) @braet spillernummer vinduesbredde vindueshoejde 7 7 [50 10 85 0] [10 50 85 0] 120000 historiklaengde @braethistorik)
-					        ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
-					      )
-					      []
+					    (dosync
+		                              ((@(specialiserede-grafikmodul :funktionalitet) :fastsaet-tilstand) @braet spillernummer vinduesbredde vindueshoejde 7 7 [50 10 85 0] [10 50 85 0] 120000 historiklaengde @braethistorik)
+					      ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
 					    )
 					    (reset! kanal-til-hent-spillertraek (timeout tidsgraense))
 					    (let [

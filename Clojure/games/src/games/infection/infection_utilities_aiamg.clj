@@ -58,12 +58,9 @@
     (if (not= nil musehaendelse)
       (if (= (.getButton musehaendelse) MouseEvent/BUTTON1)
         (do
-	  ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
-	    (fn []
-	      ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :vaelg-fokuseret-celle))
-	      ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
-	    )
-	    []
+	  (dosync
+	    ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :vaelg-fokuseret-celle))
+	    ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
 	  )
 	  (let [valgte-celler ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :hent-valgte-celler))]
             (if (>= (count valgte-celler) 2)
@@ -73,12 +70,9 @@
 	  )
 	)
 	(if (= (.getButton musehaendelse) MouseEvent/BUTTON3)
-	  ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
-	    (fn []
-	      ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :fravaelg-alle-valgte-celler))
-	      ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
-	    )
-	    []
+	  (dosync
+	    ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :fravaelg-alle-valgte-celler))
+	    ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
 	  )
 	)
       )
@@ -88,12 +82,9 @@
 
 (defn ny-musebevaegelsehaendelsesbehandler [specialiserede-grafikmodul]
   (fn [musebevaegelseshaendelse]
-    ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :kald-funktion-med-laas)
-      (fn []
-	((@(specialiserede-grafikmodul :funktionalitet) :fokuser-paa-celle) musebevaegelseshaendelse)
-	((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
-      )
-      []
+    (dosync
+      ((@(specialiserede-grafikmodul :funktionalitet) :fokuser-paa-celle) musebevaegelseshaendelse)
+      ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
     )
   )
 )

@@ -430,12 +430,6 @@
 							  )
 						     )
 					           )
-				:kald-funktion-med-laas (fn [
-				                              funktion
-				                              argumentliste
-			                                    ]
-							  (dosync (apply funktion argumentliste))
-							)
 				:opdater-tilstand (fn [
 				                        noegle
 							vaerdi
