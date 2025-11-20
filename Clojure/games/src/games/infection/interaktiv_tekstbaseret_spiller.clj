@@ -1,6 +1,6 @@
 (ns games.infection.interaktiv-tekstbaseret-spiller
   (:require [clojure.test :refer :all]
-	    (games.infection [infection-utilities-misc :as infection-utils-misc])
+	    (games.infection [infektion-hjaelpefunktioner-diverse :as infektion-hjlp-div])
     	    [clojure.string :as str]
 	    [clojure.edn :as edn]
   )
@@ -16,12 +16,12 @@
 
 (defn new-player [player-number]
   (let [
-         board (atom (infection-utils-misc/init-board "*" "¤"))
+         board (atom (infektion-hjlp-div/init-board "*" "¤"))
 	 player-chip (if (= player-number 1) "*" "¤")
 	 opponent-chip (if (= player-number 1) "¤" "*")
          get-user-move (fn [player-number]
 	                   (println (str "\n\tDit braet spiller " player-number ":"))
-	                   (println (str "\n" (infection-utils-misc/board-to-str @board "\t\t") "\n"))
+	                   (println (str "\n" (infektion-hjlp-div/board-to-str @board "\t\t") "\n"))
 	                   (println (str "\tSpiller " player-number ", indtast dit traek: "))
 			   (flush)
 			   (let [
@@ -33,13 +33,13 @@
 				  j1 (- (Integer/parseInt move-string-j1) 1)
 			          move-string-i1 (do (print "\tTraek i1: ") (flush) (read-line))
 				  i1 (- (Integer/parseInt move-string-i1) 1)
-				  move {:from-coord [j0 i0] :to-coord [j1 i1]}
+				  move {:fra-koordinat [j0 i0] :til-koordinat [j1 i1]}
 			        ]
-			        (if (infection-utils-misc/move-valid? @board player-chip move)
-				  (swap! board infection-utils-misc/make-move move)
+			        (if (infektion-hjlp-div/move-valid? @board player-chip move)
+				  (swap! board infektion-hjlp-div/make-move move)
 				)
 				(println (str "\n\tDit opdaterede braet spiller " player-number ":"))
-	                        (println (str "\n" (infection-utils-misc/board-to-str @board "\t\t") "\n"))
+	                        (println (str "\n" (infektion-hjlp-div/board-to-str @board "\t\t") "\n"))
 				(str move)
 			   )
 		       )
@@ -48,8 +48,8 @@
 		                 move-string (nth (:data unit-input) 1)
 				 move (edn/read-string move-string)
 			       ]
-			       (if (infection-utils-misc/move-valid? @board opponent-chip move)
-			         (swap! board infection-utils-misc/make-move move)
+			       (if (infektion-hjlp-div/move-valid? @board opponent-chip move)
+			         (swap! board infektion-hjlp-div/make-move move)
 			       )
 			  )
 		      )
@@ -60,7 +60,7 @@
              ]
              (case first-data-element
 	        "initialiserSpil"	  (do
-		                            (reset! board (infection-utils-misc/init-board "*" "¤"))
+		                            (reset! board (infektion-hjlp-div/init-board "*" "¤"))
 					    {:data ["Ok"]}
 					  )
                 "hentFoersteTraek"          {:data [(str (get-user-move player-number))]}
@@ -71,7 +71,7 @@
                 "meddelTraek"             (do
 		                            (update-board unit-input)
 					    (println (str "\n\tDit braet spiller " player-number ":"))
-					    (println (str "\n" (infection-utils-misc/board-to-str @board "\t\t") "\n"))
+					    (println (str "\n" (infektion-hjlp-div/board-to-str @board "\t\t") "\n"))
 					    {:data ["Accepteret"]}
 					  )
              )

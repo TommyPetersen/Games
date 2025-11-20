@@ -1,6 +1,6 @@
 (ns games.infection.ikke-interaktiv-spiller-baseret-paa-tilfaeldige-traek
   (:require [clojure.test :refer :all]
-	    (games.infection [infection-utilities-misc :as infection-utils-misc])
+	    (games.infection [infektion-hjaelpefunktioner-diverse :as infektion-hjlp-div])
     	    [clojure.string :as str]
 	    [clojure.edn :as edn]
   )
@@ -16,15 +16,15 @@
 
 (defn new-player [player-number]
   (let [
-         board (atom (infection-utils-misc/init-board "*" "¤"))
+         board (atom (infektion-hjlp-div/init-board "*" "¤"))
 	 player-chip (if (= player-number 1) "*" "¤")
 	 opponent-chip (if (= player-number 1) "¤" "*")
          get-user-move (fn [player-number]
 			   (let [
-				  move (infection-utils-misc/get-random-valid-move @board player-chip)
+				  move (infektion-hjlp-div/get-random-valid-move @board player-chip)
 			        ]
-			        (if (infection-utils-misc/move-valid? @board player-chip move)
-				  (swap! board infection-utils-misc/make-move move)
+			        (if (infektion-hjlp-div/move-valid? @board player-chip move)
+				  (swap! board infektion-hjlp-div/make-move move)
 				)
 				(str move)
 			   )
@@ -34,8 +34,8 @@
 		                 move-string (nth (:data unit-input) 1)
 				 move (edn/read-string move-string)
 			       ]
-			       (if (infection-utils-misc/move-valid? @board opponent-chip move)
-			         (swap! board infection-utils-misc/make-move move)
+			       (if (infektion-hjlp-div/move-valid? @board opponent-chip move)
+			         (swap! board infektion-hjlp-div/make-move move)
 			       )
 			  )
 		      )
@@ -44,7 +44,7 @@
          (let [first-data-element (first (:data unit-input))]
              (case first-data-element
 	        "initialiserSpil"	  (do
-		                            (reset! board (infection-utils-misc/init-board "*" "¤"))
+		                            (reset! board (infektion-hjlp-div/init-board "*" "¤"))
 					    {:data ["Ok"]}
 					  )
                 "hentFoersteTraek"          {:data [(str (get-user-move player-number))]}

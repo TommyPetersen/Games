@@ -9,5 +9,5 @@
   :resource-paths ["resources/Aiamg.jar"]
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}}
-  :repl-options {:init-ns games.infection.interaktiv-grafikbaseret-spiller}
+  :repl-options {:init-ns games.infection.ikke-interaktiv-dommer}
 )

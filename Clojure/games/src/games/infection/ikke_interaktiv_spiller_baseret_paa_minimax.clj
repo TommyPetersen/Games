@@ -1,6 +1,6 @@
 (ns games.infection.ikke-interaktiv-spiller-baseret-paa-minimax
   (:require [clojure.test :refer :all]
-	    (games.infection [infection-utilities-misc :as infection-utils-misc])
+	    (games.infection [infektion-hjaelpefunktioner-diverse :as infektion-hjlp-div])
     	    [clojure.string :as str]
 	    [clojure.edn :as edn]
   )
@@ -20,18 +20,18 @@
 	 opponent-chip "O"
          init-board (fn []
 	                (if (= player-number 1)
-			  (infection-utils-misc/init-board player-chip opponent-chip)
-			  (infection-utils-misc/init-board opponent-chip player-chip)
+			  (infektion-hjlp-div/init-board player-chip opponent-chip)
+			  (infektion-hjlp-div/init-board opponent-chip player-chip)
 			)
 	            )
          board (atom (init-board))
          get-move (fn []
 		      (let [
 		             max-ply-depth 3
-			     move (infection-utils-misc/next-move @board max-ply-depth)
+			     move (infektion-hjlp-div/next-move @board max-ply-depth)
 			   ]
-			   (if (infection-utils-misc/move-valid? @board player-chip move)
-			     (swap! board infection-utils-misc/make-move move)
+			   (if (infektion-hjlp-div/move-valid? @board player-chip move)
+			     (swap! board infektion-hjlp-div/make-move move)
 			   )
 			   (str move)
 		      )
@@ -41,9 +41,9 @@
 		               move-string (nth (:data unit-input) 1)
 			       move (edn/read-string move-string)
 			     ]
-			     (if (infection-utils-misc/move-valid? @board opponent-chip move)
+			     (if (infektion-hjlp-div/move-valid? @board opponent-chip move)
 			       (do
-			         (swap! board infection-utils-misc/make-move move)
+			         (swap! board infektion-hjlp-div/make-move move)
 			       )
 			     )
 			)
