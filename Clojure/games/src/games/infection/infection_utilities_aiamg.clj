@@ -103,11 +103,11 @@
 (def specialiserede-grafikmodul
   (let [
          gaengse-grafikmodul game-utils-aiamg/grafikmodul
-         tilstand (atom {
-                          :historiklaengde nil
-			  :braethistorik nil
-	                  :statistikramme nil
-                        }
+         tilstand (ref {
+                         :historiklaengde nil
+		         :braethistorik nil
+	                 :statistikramme nil
+                       }
 	          )
          funktionalitet (atom {
 	                        :fastsaet-tilstand (fn [
@@ -131,11 +131,11 @@
 							      spilramme (@(gaengse-grafikmodul :tilstand) :base-frame)
 						              statistikramme (game-utils-aiamg/calculate-aux-frame (:left graensekoordinater) (+ (:left graensekoordinater) (* 20 historiklaengde)) (:base-frame-top-border spilramme) (:top graensekoordinater) [0 0 10 10])
 							    ]
-						            (reset! tilstand {
-							                       :historiklaengde historiklaengde
-								               :braethistorik braethistorik
-									       :statistikramme statistikramme
-									     }
+							    (dosync
+						              (alter tilstand assoc :historiklaengde historiklaengde
+							  	                    :braethistorik braethistorik
+								 	            :statistikramme statistikramme
+							      )
 							    )
 						       )
 						   )
@@ -143,7 +143,7 @@
 				                        noegle
 							vaerdi
 						      ]
-						    (swap! tilstand assoc noegle vaerdi)
+						    (dosync (alter tilstand assoc noegle vaerdi))
 				                  )
 				:fokuser-paa-celle (fn [
 				                         musebevaegelseshaendelse
@@ -188,18 +188,18 @@
 						                   ]
 								   (if cellekoordinat-i-fokus-er-gyldigt?
 						                     (do
-							               (swap! (gaengse-grafikmodul :tilstand) assoc :fokuseret-celle-indekseret celleindeks-i-fokus)
-							               (swap! (gaengse-grafikmodul :tilstand) assoc :fokuseret-celle-rammefarve {:top Color/gray :bottom Color/gray :left Color/gray :right Color/gray})
+								       ((@(gaengse-grafikmodul :funktionalitet) :opdater-tilstand) :fokuseret-celle-indekseret celleindeks-i-fokus)
+							               ((@(gaengse-grafikmodul :funktionalitet) :opdater-tilstand) :fokuseret-celle-rammefarve {:top Color/gray :bottom Color/gray :left Color/gray :right Color/gray})
 							             )
 								     (do
-							               (swap! (gaengse-grafikmodul :tilstand) assoc :fokuseret-celle-indekseret nil)
-							               (swap! (gaengse-grafikmodul :tilstand) assoc :fokuseret-celle-rammefarve nil)
+								       ((@(gaengse-grafikmodul :funktionalitet) :opdater-tilstand) :fokuseret-celle-indekseret nil)
+							               ((@(gaengse-grafikmodul :funktionalitet) :opdater-tilstand) :fokuseret-celle-rammefarve nil)
 							             )
 								   )
 							      )
 							      (do
-							        (swap! (gaengse-grafikmodul :tilstand) assoc :fokuseret-celle-indekseret nil)
-							        (swap! (gaengse-grafikmodul :tilstand) assoc :fokuseret-celle-rammefarve nil)
+								((@(gaengse-grafikmodul :funktionalitet) :opdater-tilstand) :fokuseret-celle-indekseret nil)
+							        ((@(gaengse-grafikmodul :funktionalitet) :opdater-tilstand) :fokuseret-celle-rammefarve nil)
 							      )
 				                            )
 						       )

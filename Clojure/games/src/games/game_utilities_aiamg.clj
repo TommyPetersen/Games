@@ -3,7 +3,6 @@
   (:import
 	(java.awt Color)
 	(Aiamg Camera Polygon3D Point3D Line3D)
-        [java.util.concurrent.locks ReentrantLock]
   )
 )
 
@@ -363,23 +362,27 @@
 
 (def grafikmodul
   (let [
-         synkro-laas (ReentrantLock.)
-         tilstand (atom {
-	                  :braet nil
-	                  :spillerbrik nil
-			  :modstanderbrik nil
-                          :kamera nil
-		          :base-frame nil
-		          :cell-grid-coords nil
-                          :valgte-celler-indekseret nil
-                          :fokuseret-celle-indekseret nil
-                          :fokuseret-celle-rammefarve nil
-                          :nedtaellingsramme-spiller nil
-                          :nedtaellingsramme-modstander nil
-			  :samlet-tid-for-spiller nil
-			  :samlet-tid-for-modstander nil
-			  :tidsgraense nil
-                        }
+         synkroniseringsref (ref {
+	                           :punktgitter nil
+				   :vis-scene nil
+				 }
+		            )
+         tilstand (ref {
+	                 :braet nil
+	                 :spillerbrik nil
+			 :modstanderbrik nil
+                         :kamera nil
+		         :base-frame nil
+		         :cell-grid-coords nil
+                         :valgte-celler-indekseret nil
+                         :fokuseret-celle-indekseret nil
+                         :fokuseret-celle-rammefarve nil
+                         :nedtaellingsramme-spiller nil
+                         :nedtaellingsramme-modstander nil
+			 :samlet-tid-for-spiller nil
+			 :samlet-tid-for-modstander nil
+			 :tidsgraense nil
+                       }
 		  )
          funktionalitet (atom {
 	                        :fastsaet-tilstand (fn [
@@ -408,42 +411,36 @@
 							    samlet-tid-for-spiller 0
 							    samlet-tid-for-modstander 0
 						          ]
-						          (reset! tilstand {
-							                     :braet braet
-							                     :spillerbrik spillerbrik
-									     :modstanderbrik modstanderbrik
-							                     :kamera kamera
-								             :base-frame base-frame
-								             :cell-grid-coords cell-grid-coords
-								  	     :valgte-celler-indekseret []
-									     :fokuseret-celle-indekseret nil
-									     :fokuseret-celle-rammefarve nil
-									     :nedtaellingsramme-spiller nedtaellingsramme-spiller
-									     :nedtaellingsramme-modstander nedtaellingsramme-modstander
-									     :samlet-tid-for-spiller samlet-tid-for-spiller
-									     :samlet-tid-for-modstander samlet-tid-for-modstander
-									     :tidsgraense tidsgraense
-									   }
-						          )
+							  (dosync
+						            (alter tilstand assoc :braet braet
+							                          :spillerbrik spillerbrik
+							  		          :modstanderbrik modstanderbrik
+							                          :kamera kamera
+								                  :base-frame base-frame
+								                  :cell-grid-coords cell-grid-coords
+								  	          :valgte-celler-indekseret []
+									          :fokuseret-celle-indekseret nil
+									          :fokuseret-celle-rammefarve nil
+									          :nedtaellingsramme-spiller nedtaellingsramme-spiller
+									          :nedtaellingsramme-modstander nedtaellingsramme-modstander
+									          :samlet-tid-for-spiller samlet-tid-for-spiller
+									          :samlet-tid-for-modstander samlet-tid-for-modstander
+									          :tidsgraense tidsgraense
+						            )
+							  )
 						     )
 					           )
 				:kald-funktion-med-laas (fn [
 				                              funktion
 				                              argumentliste
 			                                    ]
-                                                          (.lock synkro-laas)
-                                                          (try
-				                            (apply funktion argumentliste)
-                                                            (finally
-                                                              (.unlock synkro-laas)
-                                                            )
-                                                          )
-                                                        )
+							  (dosync (apply funktion argumentliste))
+							)
 				:opdater-tilstand (fn [
 				                        noegle
 							vaerdi
 						      ]
-						    (swap! tilstand assoc noegle vaerdi)
+						    (dosync (alter tilstand assoc noegle vaerdi))
 				                  )
 				:vaelg-fokuseret-celle (fn []
 				                         (let [
@@ -453,18 +450,13 @@
 						                                                      (conj valgte-celler-indekseret (@tilstand :fokuseret-celle-indekseret))
 											            )
 					                      ]
-				                              (swap! tilstand assoc :valgte-celler-indekseret opdaterede-valgte-celler-indekseret)
+							      (dosync (alter tilstand assoc :valgte-celler-indekseret opdaterede-valgte-celler-indekseret))
 					                 )
 				                       )
 				:hent-valgte-celler (fn [] (@tilstand :valgte-celler-indekseret))
-				:fravaelg-alle-valgte-celler (fn [] (swap! tilstand assoc :valgte-celler-indekseret []))
-				:rens-laerred (fn [] (.clearRaster (@tilstand :kamera)))
-				:vis-laerred (fn [] (.showScene (@tilstand :kamera)))
-				:tegn-givne-geometriske-figurer (fn [
-				                                      geometriske-figurer	; Liste jvf. Camera.updateScene
-						                    ]
-						                    ((.updateScene (@tilstand :kamera)) geometriske-figurer)
-						                )
+				:fravaelg-alle-valgte-celler (fn [] (dosync (alter tilstand assoc :valgte-celler-indekseret [])))
+				:rens-laerred (fn [] (dosync (alter synkroniseringsref assoc :punktgitter (.clearRaster (@tilstand :kamera)))))
+				:vis-laerred (fn [] (dosync (alter synkroniseringsref assoc :vis-scene (.showScene (@tilstand :kamera)))))
 				:tegn-de-gaengse-figurer (fn []
 				                             (let [
 							            spillerbrik (@tilstand :spillerbrik)

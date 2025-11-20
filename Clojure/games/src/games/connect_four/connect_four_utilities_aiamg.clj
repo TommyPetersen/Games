@@ -90,18 +90,18 @@
 						                   ]
 								   (if cellekoordinat-i-fokus-er-gyldigt?
 						                     (do
-							               (swap! (gaengse-grafikmodul :tilstand) assoc :fokuseret-celle-indekseret celleindeks-i-fokus)
-							               (swap! (gaengse-grafikmodul :tilstand) assoc :fokuseret-celle-rammefarve {:top Color/gray :bottom Color/gray :left Color/gray :right Color/gray})
+								       ((@(gaengse-grafikmodul :funktionalitet) :opdater-tilstand) :fokuseret-celle-indekseret celleindeks-i-fokus)
+							               ((@(gaengse-grafikmodul :funktionalitet) :opdater-tilstand) :fokuseret-celle-rammefarve {:top Color/gray :bottom Color/gray :left Color/gray :right Color/gray})
 							             )
 								     (do
-							               (swap! (gaengse-grafikmodul :tilstand) assoc :fokuseret-celle-indekseret nil)
-							               (swap! (gaengse-grafikmodul :tilstand) assoc :fokuseret-celle-rammefarve nil)
+								       ((@(gaengse-grafikmodul :funktionalitet) :opdater-tilstand) :fokuseret-celle-indekseret nil)
+							               ((@(gaengse-grafikmodul :funktionalitet) :opdater-tilstand) :fokuseret-celle-rammefarve nil)
 							             )
 								   )
 							      )
 							      (do
-							        (swap! (gaengse-grafikmodul :tilstand) assoc :fokuseret-celle-indekseret nil)
-							        (swap! (gaengse-grafikmodul :tilstand) assoc :fokuseret-celle-rammefarve nil)
+							        ((@(gaengse-grafikmodul :funktionalitet) :opdater-tilstand) :fokuseret-celle-indekseret nil)
+							        ((@(gaengse-grafikmodul :funktionalitet) :opdater-tilstand) :fokuseret-celle-rammefarve nil)
 							      )
 				                            )
 						       )
