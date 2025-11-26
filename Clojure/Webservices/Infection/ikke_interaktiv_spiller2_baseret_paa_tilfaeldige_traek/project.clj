@@ -9,6 +9,7 @@
 		  [http-kit "2.6.0"]
 		  [ring/ring-defaults "0.3.4"]
 		  [org.clojure/data.json "2.4.0"]
+                  [org.clojure/core.async "1.8.741"]
 		]
   :main ^:skip-aot ikke-interaktiv-spiller2-baseret-paa-tilfaeldige-traek.spiller
   :resource-paths ["resources/Aiamg.jar"]
