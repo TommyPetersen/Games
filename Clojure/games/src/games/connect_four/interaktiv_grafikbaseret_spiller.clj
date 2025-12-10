@@ -5,6 +5,7 @@
             (games.connect-four [connect-four-utilities-aiamg :as connect-four-utils-aiamg]
                                 [connect-four-utilities-misc :as connect-four-utils-misc])
     	    [clojure.string :as str]
+            [clojure.edn :as edn]
 	    [clojure.core.async :refer [go <!! timeout]]
   )
   (:import (java.awt.event MouseAdapter))
@@ -126,7 +127,9 @@
 					           fn-behandl-musehaendelse (connect-four-utils-aiamg/ny-musehaendelsesbehandler specialiserede-grafikmodul kanal-til-hent-spillertraek)
 	                                           fn-behandl-musebevaegelseshaendelse (connect-four-utils-aiamg/ny-musebevaegelsehaendelsesbehandler specialiserede-grafikmodul)
 	                                           skaerm (.getScreen (@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera))
+                                                   dialogsystem (edn/read-string (second (:data enheds-inddata)))
 						 ]
+                                                 (.setLocation skaerm (dialogsystem :vindueslokalisering-x) (dialogsystem :vindueslokalisering-y))
                                                  (.addMouseListener skaerm (proxy [MouseAdapter] []
        	                                                                     (mouseClicked [musehaendelse]
 									       (if @behandl-alle-musehaendelsestyper

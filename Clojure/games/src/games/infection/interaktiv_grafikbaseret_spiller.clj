@@ -145,7 +145,9 @@
                                                    fn-behandl-musehaendelse (infektion-hjlp-aiamg/ny-musehaendelsesbehandler specialiserede-grafikmodul kanal-til-hent-spillertraek)
                                                    fn-behandl-musebevaegelseshaendelse (infektion-hjlp-aiamg/ny-musebevaegelsehaendelsesbehandler specialiserede-grafikmodul)
                                                    skaerm (.getScreen (@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera))
+                                                   dialogsystem (edn/read-string (second (:data enheds-inddata)))
                                                  ]
+                                                 (.setLocation skaerm (dialogsystem :vindueslokalisering-x) (dialogsystem :vindueslokalisering-y))
                                                  (.addMouseListener skaerm (proxy [MouseAdapter] []
                                                                              (mouseClicked [musehaendelse]
                                                                                (if @behandl-alle-musehaendelsestyper
