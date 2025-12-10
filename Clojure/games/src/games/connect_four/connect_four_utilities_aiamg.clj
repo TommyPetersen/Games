@@ -46,13 +46,15 @@
 				                         spillernummer
 						         vinduesbredde
 				                         vindueshoejde
+                                                         vindueslokalisering-x
+                                                         vindueslokalisering-y
 						         braetbredde
 						         braethoejde
 						         nedtaellingsramme-venstre-margin-pctr	; [50 10 85 0]
 						         nedtaellingsramme-hoejre-margin-pctr	; [10 50 85 0]
 						         tidsgraense
 						       ]
-						       ((@(gaengse-grafikmodul :funktionalitet) :fastsaet-tilstand) braet spillernummer vinduesbredde vindueshoejde braetbredde braethoejde nedtaellingsramme-venstre-margin-pctr nedtaellingsramme-hoejre-margin-pctr tidsgraense)
+						       ((@(gaengse-grafikmodul :funktionalitet) :fastsaet-tilstand) braet spillernummer vinduesbredde vindueshoejde vindueslokalisering-x vindueslokalisering-y braetbredde braethoejde nedtaellingsramme-venstre-margin-pctr nedtaellingsramme-hoejre-margin-pctr tidsgraense)
 						   )
 				:fokuser-paa-celle (fn [
 				                         musebevaegelseshaendelse

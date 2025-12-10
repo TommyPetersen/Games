@@ -133,21 +133,21 @@
        (fn [enheds-inddata]
          (let [first-data-element (first (:data enheds-inddata))]
              (case first-data-element
-                "initialiserSpil"         (do
-                                            (reset! braet (infektion-hjlp-div/init-board "*" "¤"))
-                                            (reset! braethistorik [@braet])
-                                            (dosync
-                                              ((@(specialiserede-grafikmodul :funktionalitet) :fastsaet-tilstand) @braet spillernummer vinduesbredde vindueshoejde 7 7 [50 10 85 0] [10 50 85 0] 120000 historiklaengde @braethistorik)
-                                              ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
-                                            )
-                                            (reset! kanal-til-hent-spillertraek (timeout tidsgraense))
-                                            (let [
-                                                   fn-behandl-musehaendelse (infektion-hjlp-aiamg/ny-musehaendelsesbehandler specialiserede-grafikmodul kanal-til-hent-spillertraek)
-                                                   fn-behandl-musebevaegelseshaendelse (infektion-hjlp-aiamg/ny-musebevaegelsehaendelsesbehandler specialiserede-grafikmodul)
-                                                   skaerm (.getScreen (@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera))
-                                                   dialogsystem (edn/read-string (second (:data enheds-inddata)))
-                                                 ]
-                                                 (.setLocation skaerm (dialogsystem :vindueslokalisering-x) (dialogsystem :vindueslokalisering-y))
+                "initialiserSpil"         (let [
+                                                 dialogsystem (edn/read-string (second (:data enheds-inddata)))
+                                               ]
+                                               (reset! braet (infektion-hjlp-div/init-board "*" "¤"))
+                                               (reset! braethistorik [@braet])
+                                               (dosync
+                                                 ((@(specialiserede-grafikmodul :funktionalitet) :fastsaet-tilstand) @braet spillernummer vinduesbredde vindueshoejde (dialogsystem :vindueslokalisering-x) (dialogsystem :vindueslokalisering-y) 7 7 [50 10 85 0] [10 50 85 0] 120000 historiklaengde @braethistorik)
+                                                 ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+                                               )
+                                               (reset! kanal-til-hent-spillertraek (timeout tidsgraense))
+                                               (let [
+                                                      fn-behandl-musehaendelse (infektion-hjlp-aiamg/ny-musehaendelsesbehandler specialiserede-grafikmodul kanal-til-hent-spillertraek)
+                                                      fn-behandl-musebevaegelseshaendelse (infektion-hjlp-aiamg/ny-musebevaegelsehaendelsesbehandler specialiserede-grafikmodul)
+                                                      skaerm (.getScreen (@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera))
+                                                    ]
                                                  (.addMouseListener skaerm (proxy [MouseAdapter] []
                                                                              (mouseClicked [musehaendelse]
                                                                                (if @behandl-alle-musehaendelsestyper
@@ -164,8 +164,8 @@
                                                                                    )
                                                                                  )
                                                  )
-                                            )
-                                            {:data ["Ok"]}
+                                               )
+                                               {:data ["Ok"]}
                                           )
                 "hentFoersteTraek"        {:data [(str (hent-spillertraek spillernummer))]}
                 "hentNaesteTraek"         (do

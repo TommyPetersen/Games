@@ -107,6 +107,8 @@
 				                         spillernummer
 						         vinduesbredde
 				                         vindueshoejde
+                                                         vindueslokalisering-x
+                                                         vindueslokalisering-y
 						         braetbredde
 						         braethoejde
 						         nedtaellingsramme-venstre-margin-pctr	; [50 10 85 0]
@@ -116,7 +118,7 @@
 							 historiklaengde
 							 braethistorik
 						       ]
-						       ((@(gaengse-grafikmodul :funktionalitet) :fastsaet-tilstand) braet spillernummer vinduesbredde vindueshoejde braetbredde braethoejde nedtaellingsramme-venstre-margin-pctr nedtaellingsramme-hoejre-margin-pctr tidsgraense)
+						       ((@(gaengse-grafikmodul :funktionalitet) :fastsaet-tilstand) braet spillernummer vinduesbredde vindueshoejde vindueslokalisering-x vindueslokalisering-y braetbredde braethoejde nedtaellingsramme-venstre-margin-pctr nedtaellingsramme-hoejre-margin-pctr tidsgraense)
 						       (let [
 						              graensekoordinater ((@(gaengse-grafikmodul :tilstand) :cell-grid-coords) :border-coords)
 							      spilramme (@(gaengse-grafikmodul :tilstand) :base-frame)
