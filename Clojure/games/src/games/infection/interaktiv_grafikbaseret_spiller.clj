@@ -6,7 +6,7 @@
                              [infektion-hjaelpefunktioner-diverse :as infektion-hjlp-div])
             [clojure.string :as str]
             [clojure.edn :as edn]
-            [clojure.core.async :refer [go <!! timeout]]
+            [clojure.core.async :refer [go >! <!! timeout]]
   )
   (:import (java.awt.event MouseAdapter))
 )
@@ -36,7 +36,6 @@
          spillerbrik (if (= spillernummer 1) "*" "¤")
          modstanderbrik (if (= spillernummer 1) "¤" "*")
          fortsaet-nedtaelling-for-modstander (atom (atom false))
-         skal-hent-traek-afbrydes (atom false)
          behandl-alle-musehaendelsestyper (atom false)
          kanal-til-hent-spillertraek (atom nil)
          tegn-nedtaellinger (fn [
@@ -44,10 +43,16 @@
                                   samlet-tid-for-modstander
                                   tidsgraense
                                 ]
-                              (dosync
-                                ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-spiller samlet-tid-for-spiller)
-                                ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-modstander samlet-tid-for-modstander)
-                                ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+                              (try
+                                (dosync
+                                  ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-spiller samlet-tid-for-spiller)
+                                  ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-modstander samlet-tid-for-modstander)
+                                  ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+                                )
+                                (catch NullPointerException npe
+                                  (go (>! @kanal-til-hent-spillertraek {:fra-koordinat [-1 -1] :til-koordinat [-1 -1]}))
+                                  (throw npe)
+                                )
                               )
                             )
          hent-spillertraek (fn [spillernummer]
@@ -58,7 +63,7 @@
                                                               (fn [v]
                                                                 (tegn-nedtaellinger v 0 tidsgraense)
                                                               )
-                                                              tidsenhed tidsgraense skal-hent-traek-afbrydes
+                                                              tidsenhed tidsgraense
                                                             )
                                       fortsaet-nedtaelling-for-spiller (:continue-going go-loop-result-player)
                                       _ (reset! behandl-alle-musehaendelsestyper true)
@@ -89,7 +94,7 @@
                                                                            (fn [v]
                                                                              (tegn-nedtaellinger 0 v tidsgraense)
                                                                            )
-                                                                           tidsenhed tidsgraense skal-hent-traek-afbrydes
+                                                                           tidsenhed tidsgraense
                                                                          )
                                                ]
                                                (reset! fortsaet-nedtaelling-for-modstander (:continue-going go-loop-result-opponent))
