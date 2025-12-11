@@ -354,8 +354,13 @@
   )
 )
 
-(defn nyt-kamera [window-width window-height]
-  (new Camera 10.0 projection-plane-z window-width window-height window-width window-height)
+(defn nyt-kamera [
+                   window-width
+                   window-height
+                   vindueslokalisering-x
+                   vindueslokalisering-y
+                 ]
+  (new Camera 10.0 projection-plane-z window-width window-height window-width window-height vindueslokalisering-x vindueslokalisering-y)
 )
 
 ;;; Grafikmodul ;;;
@@ -390,6 +395,8 @@
 				                         spillernummer
 						         vinduesbredde
 				                         vindueshoejde
+                                                         vindueslokalisering-x
+                                                         vindueslokalisering-y
 						         braetbredde
 						         braethoejde
 						         nedtaellingsramme-venstre-margin-pctr	; [50 10 85 0]
@@ -399,7 +406,7 @@
 						     (let [
 						            spillerbrik (if (= spillernummer 1) "*" "¤")
 							    modstanderbrik (if (= spillernummer 1) "¤" "*")
-						            kamera (nyt-kamera vinduesbredde vindueshoejde)
+						            kamera (nyt-kamera vinduesbredde vindueshoejde vindueslokalisering-x vindueslokalisering-y)
 							    base-frame (calculate-base-frame vinduesbredde vindueshoejde)
 							    cell-grid-coords (generate-cell-grid-coords braetbredde braethoejde base-frame)
 							    border-coords (:border-coords cell-grid-coords)
