@@ -360,7 +360,7 @@
                    vindueslokalisering-x
                    vindueslokalisering-y
                  ]
-  (new Camera 10.0 projection-plane-z window-width window-height window-width window-height vindueslokalisering-x vindueslokalisering-y)
+  (new Camera 10.0 projection-plane-z window-width window-height window-width window-height vindueslokalisering-x vindueslokalisering-y false)
 )
 
 ;;; Grafikmodul ;;;
