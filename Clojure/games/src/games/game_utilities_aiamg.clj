@@ -3,6 +3,7 @@
   (:import
 	(java.awt Color)
 	(Aiamg Camera Polygon3D Point3D Line3D)
+        (Aiamg.Utils ProjectionType)
   )
 )
 
@@ -113,10 +114,10 @@
 	                                   (new Point3D (:frame-x1 aux-frame) (:frame-y0 aux-frame) projection-plane-z frame-color))
        ]
        (doto kamera
-	 (.updateScene aux-frame-left-line)
-         (.updateScene aux-frame-top-line)
-	 (.updateScene aux-frame-right-line)
-	 (.updateScene aux-frame-bottom-line)
+	 (.updateScene aux-frame-left-line ProjectionType/PERSPECTIVE)
+         (.updateScene aux-frame-top-line ProjectionType/PERSPECTIVE)
+	 (.updateScene aux-frame-right-line ProjectionType/PERSPECTIVE)
+	 (.updateScene aux-frame-bottom-line ProjectionType/PERSPECTIVE)
        )
   )
 )
@@ -145,7 +146,7 @@
                             )
          ]
          (doto kamera
-	   (.updateScene nedtaellingsfyld)
+	   (.updateScene nedtaellingsfyld ProjectionType/PERSPECTIVE)
          )
     )
   )
@@ -278,11 +279,11 @@
                 board-cell (new-board-cell cell-left-border cell-top-border cell-right-border cell-bottom-border board-cell-margin-pct cell-frame-color brikfarve)
 	      ]
 	      (doto kamera
-	        (.updateScene (:cell-top board-cell))
-		(.updateScene (:cell-bottom board-cell))
-		(.updateScene (:cell-left board-cell))
-		(.updateScene (:cell-right board-cell))
-		(.updateScene (:cell-chip board-cell))
+	        (.updateScene (:cell-top board-cell) ProjectionType/PERSPECTIVE)
+		(.updateScene (:cell-bottom board-cell) ProjectionType/PERSPECTIVE)
+		(.updateScene (:cell-left board-cell) ProjectionType/PERSPECTIVE)
+		(.updateScene (:cell-right board-cell) ProjectionType/PERSPECTIVE)
+		(.updateScene (:cell-chip board-cell) ProjectionType/PERSPECTIVE)
 	      )
 	 )
   )
@@ -318,14 +319,14 @@
 	                                    (new Point3D (- (:left border-coords) 1) (- (:bottom border-coords) 1) projection-plane-z Color/gray))
        ]
        (doto kamera
-	 (.updateScene base-frame-left-line)
-         (.updateScene base-frame-top-line)
-	 (.updateScene base-frame-right-line)
-	 (.updateScene base-frame-bottom-line)
-	 (.updateScene cell-frame-left-line)
-	 (.updateScene cell-frame-top-line)
-	 (.updateScene cell-frame-right-line)
-	 (.updateScene cell-frame-bottom-line)
+	 (.updateScene base-frame-left-line ProjectionType/PERSPECTIVE)
+         (.updateScene base-frame-top-line ProjectionType/PERSPECTIVE)
+	 (.updateScene base-frame-right-line ProjectionType/PERSPECTIVE)
+	 (.updateScene base-frame-bottom-line ProjectionType/PERSPECTIVE)
+	 (.updateScene cell-frame-left-line ProjectionType/PERSPECTIVE)
+	 (.updateScene cell-frame-top-line ProjectionType/PERSPECTIVE)
+	 (.updateScene cell-frame-right-line ProjectionType/PERSPECTIVE)
+	 (.updateScene cell-frame-bottom-line ProjectionType/PERSPECTIVE)
        )
        (update-scene-from-cell-coords board kamera cell-coords selected-cell-indexes mouse-over-cell-index mouse-over-cell-frame-color)
   )

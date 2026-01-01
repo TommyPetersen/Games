@@ -4,7 +4,10 @@
             (games.infection [infektion-hjaelpefunktioner-diverse :as infektion-hjlp-div]))
   (:import (java.awt Color))
   (:import (java.awt.event MouseEvent))
-  (:import (java.awt Color)(Aiamg Camera Polygon3D Point3D Line3D))
+  (:import (java.awt Color)
+           (Aiamg Camera Polygon3D Point3D Line3D)
+           (Aiamg.Utils ProjectionType)
+  )
 )
 
 (defn tegn-grafer [
@@ -38,9 +41,9 @@
                      line3d-avail (new Line3D @prev-point3d-avail curr-point3d-avail)
                    ]
                    (doto kamera
-                     (.updateScene line3d-pl1)
-                     (.updateScene line3d-pl2)
-                     (.updateScene line3d-avail)
+                     (.updateScene line3d-pl1 ProjectionType/PERSPECTIVE)
+                     (.updateScene line3d-pl2 ProjectionType/PERSPECTIVE)
+                     (.updateScene line3d-avail ProjectionType/PERSPECTIVE)
                    )
                    (reset! prev-point3d-pl1 curr-point3d-pl1)
                    (reset! prev-point3d-pl2 curr-point3d-pl2)
