@@ -41,9 +41,9 @@
                      line3d-avail (new Line3D @prev-point3d-avail curr-point3d-avail)
                    ]
                    (doto kamera
-                     (.updateScene line3d-pl1 ProjectionType/PERSPECTIVE)
-                     (.updateScene line3d-pl2 ProjectionType/PERSPECTIVE)
-                     (.updateScene line3d-avail ProjectionType/PERSPECTIVE)
+                     (.updateScene line3d-pl1 ProjectionType/ORTHOGRAPHIC)
+                     (.updateScene line3d-pl2 ProjectionType/ORTHOGRAPHIC)
+                     (.updateScene line3d-avail ProjectionType/ORTHOGRAPHIC)
                    )
                    (reset! prev-point3d-pl1 curr-point3d-pl1)
                    (reset! prev-point3d-pl2 curr-point3d-pl2)

@@ -3,7 +3,7 @@
   (:import
 	(java.awt Color)
 	(Aiamg Camera Polygon3D Point3D Line3D)
-        (Aiamg.Utils ProjectionType)
+        (Aiamg.Utils ProjectionType MetricType)
   )
 )
 
@@ -114,10 +114,10 @@
 	                                   (new Point3D (:frame-x1 aux-frame) (:frame-y0 aux-frame) projection-plane-z frame-color))
        ]
        (doto kamera
-	 (.updateScene aux-frame-left-line ProjectionType/PERSPECTIVE)
-         (.updateScene aux-frame-top-line ProjectionType/PERSPECTIVE)
-	 (.updateScene aux-frame-right-line ProjectionType/PERSPECTIVE)
-	 (.updateScene aux-frame-bottom-line ProjectionType/PERSPECTIVE)
+	 (.updateScene aux-frame-left-line ProjectionType/ORTHOGRAPHIC)
+         (.updateScene aux-frame-top-line ProjectionType/ORTHOGRAPHIC)
+	 (.updateScene aux-frame-right-line ProjectionType/ORTHOGRAPHIC)
+	 (.updateScene aux-frame-bottom-line ProjectionType/ORTHOGRAPHIC)
        )
   )
 )
@@ -146,7 +146,7 @@
                             )
          ]
          (doto kamera
-	   (.updateScene nedtaellingsfyld ProjectionType/PERSPECTIVE)
+	   (.updateScene nedtaellingsfyld ProjectionType/ORTHOGRAPHIC)
          )
     )
   )
@@ -279,11 +279,11 @@
                 board-cell (new-board-cell cell-left-border cell-top-border cell-right-border cell-bottom-border board-cell-margin-pct cell-frame-color brikfarve)
 	      ]
 	      (doto kamera
-	        (.updateScene (:cell-top board-cell) ProjectionType/PERSPECTIVE)
-		(.updateScene (:cell-bottom board-cell) ProjectionType/PERSPECTIVE)
-		(.updateScene (:cell-left board-cell) ProjectionType/PERSPECTIVE)
-		(.updateScene (:cell-right board-cell) ProjectionType/PERSPECTIVE)
-		(.updateScene (:cell-chip board-cell) ProjectionType/PERSPECTIVE)
+	        (.updateScene (:cell-top board-cell) ProjectionType/ORTHOGRAPHIC)
+		(.updateScene (:cell-bottom board-cell) ProjectionType/ORTHOGRAPHIC)
+		(.updateScene (:cell-left board-cell) ProjectionType/ORTHOGRAPHIC)
+		(.updateScene (:cell-right board-cell) ProjectionType/ORTHOGRAPHIC)
+		(.updateScene (:cell-chip board-cell) ProjectionType/ORTHOGRAPHIC)
 	      )
 	 )
   )
@@ -319,14 +319,14 @@
 	                                    (new Point3D (- (:left border-coords) 1) (- (:bottom border-coords) 1) projection-plane-z Color/gray))
        ]
        (doto kamera
-	 (.updateScene base-frame-left-line ProjectionType/PERSPECTIVE)
-         (.updateScene base-frame-top-line ProjectionType/PERSPECTIVE)
-	 (.updateScene base-frame-right-line ProjectionType/PERSPECTIVE)
-	 (.updateScene base-frame-bottom-line ProjectionType/PERSPECTIVE)
-	 (.updateScene cell-frame-left-line ProjectionType/PERSPECTIVE)
-	 (.updateScene cell-frame-top-line ProjectionType/PERSPECTIVE)
-	 (.updateScene cell-frame-right-line ProjectionType/PERSPECTIVE)
-	 (.updateScene cell-frame-bottom-line ProjectionType/PERSPECTIVE)
+	 (.updateScene base-frame-left-line ProjectionType/ORTHOGRAPHIC)
+         (.updateScene base-frame-top-line ProjectionType/ORTHOGRAPHIC)
+	 (.updateScene base-frame-right-line ProjectionType/ORTHOGRAPHIC)
+	 (.updateScene base-frame-bottom-line ProjectionType/ORTHOGRAPHIC)
+	 (.updateScene cell-frame-left-line ProjectionType/ORTHOGRAPHIC)
+	 (.updateScene cell-frame-top-line ProjectionType/ORTHOGRAPHIC)
+	 (.updateScene cell-frame-right-line ProjectionType/ORTHOGRAPHIC)
+	 (.updateScene cell-frame-bottom-line ProjectionType/ORTHOGRAPHIC)
        )
        (update-scene-from-cell-coords board kamera cell-coords selected-cell-indexes mouse-over-cell-index mouse-over-cell-frame-color)
   )
@@ -361,7 +361,7 @@
                    vindueslokalisering-x
                    vindueslokalisering-y
                  ]
-  (new Camera 10.0 projection-plane-z window-width window-height window-width window-height vindueslokalisering-x vindueslokalisering-y false)
+  (new Camera 10.0 projection-plane-z window-width window-height window-width window-height vindueslokalisering-x vindueslokalisering-y MetricType/Z_COORD)
 )
 
 ;;; Grafikmodul ;;;
