@@ -3,7 +3,7 @@
   (:import
 	(java.awt Color)
 	(Aiamg Camera Polygon3D Point3D Line3D)
-        (Aiamg.Utils ProjectionType MetricType)
+        (Aiamg.Utils ProjectionType DistanceType)
   )
 )
 
@@ -361,7 +361,7 @@
                    vindueslokalisering-x
                    vindueslokalisering-y
                  ]
-  (new Camera 10.0 projection-plane-z window-width window-height window-width window-height vindueslokalisering-x vindueslokalisering-y MetricType/Z_COORD)
+  (new Camera 10.0 projection-plane-z window-width window-height window-width window-height vindueslokalisering-x vindueslokalisering-y DistanceType/Z_COORD)
 )
 
 ;;; Grafikmodul ;;;
