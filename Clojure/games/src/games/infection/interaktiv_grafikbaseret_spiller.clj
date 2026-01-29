@@ -8,7 +8,7 @@
             [clojure.edn :as edn]
             [clojure.core.async :refer [go >! <!! timeout]]
   )
-  (:import (java.awt.event MouseAdapter))
+  (:import (java.awt.event MouseAdapter ComponentAdapter))
 )
 
 
@@ -21,7 +21,7 @@
 
 (defn ny-spiller [spillernummer]
   (let [
-         specialiserede-grafikmodul infektion-hjlp-aiamg/specialiserede-grafikmodul
+         specialiserede-grafikmodul (infektion-hjlp-aiamg/nyt-specialiseret-grafikmodul)
          vinduesbredde 800
          vindueshoejde 600
          base-frame (game-utils-aiamg/calculate-base-frame vinduesbredde vindueshoejde)
@@ -168,6 +168,21 @@
                                                                                      )
                                                                                    )
                                                                                  )
+                                                 )
+                                                 (.addComponentListener skaerm (proxy [ComponentAdapter] []
+                                                                                 (componentResized [komponenthaendelse]
+                                                                                   (let [
+                                                                                          _ (println "C:" (str specialiserede-grafikmodul))
+                                                                                          vin-bredde (.getWidth (.getScreen (@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera)))
+                                                                                          vin-hoejde (.getHeight (.getScreen (@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera)))
+                                                                                        ]
+                                                                                        (dosync
+                                                                                          ((@(specialiserede-grafikmodul :funktionalitet) :opdater-vinduesstoerrelse) vin-bredde vin-hoejde 7 7 [50 10 85 0] [10 50 85 0])
+                                                                                          ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+                                                                                        )
+                                                                                   )
+                                                                                 )
+                                                                               )
                                                  )
                                                )
                                                {:data ["Ok"]}

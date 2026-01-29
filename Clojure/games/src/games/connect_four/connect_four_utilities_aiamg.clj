@@ -36,9 +36,9 @@
 
 ;;; Specialiseret grafikmodul ;;;
 
-(def specialiserede-grafikmodul
+(defn nyt-specialiseret-grafikmodul []
   (let [
-         gaengse-grafikmodul game-utils-aiamg/grafikmodul
+         gaengse-grafikmodul (game-utils-aiamg/nyt-grafikmodul)
          funktionalitet (atom {
 	                        :fastsaet-tilstand (fn [
 				                         ; Gaengse parametre ;

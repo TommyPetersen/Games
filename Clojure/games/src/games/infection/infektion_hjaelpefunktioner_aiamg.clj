@@ -94,9 +94,9 @@
 
 ;;; Specialiseret grafikmodul ;;;
 
-(def specialiserede-grafikmodul
+(defn nyt-specialiseret-grafikmodul []
   (let [
-         gaengse-grafikmodul game-utils-aiamg/grafikmodul
+         gaengse-grafikmodul (game-utils-aiamg/nyt-grafikmodul)
          tilstand (ref {
                          :historiklaengde nil
                          :braethistorik nil
@@ -125,7 +125,7 @@
                                                        (let [
                                                               graensekoordinater ((@(gaengse-grafikmodul :tilstand) :cell-grid-coords) :border-coords)
                                                               spilramme (@(gaengse-grafikmodul :tilstand) :base-frame)
-                                                              statistikramme (game-utils-aiamg/calculate-aux-frame (:left graensekoordinater) (+ (:left graensekoordinater) (* 20 historiklaengde)) (:base-frame-top-border spilramme) (:top graensekoordinater) [0 0 10 10])
+                                                              statistikramme (game-utils-aiamg/calculate-aux-frame (:left graensekoordinater) (:right graensekoordinater) (:base-frame-top-border spilramme) (:top graensekoordinater) [0 60 10 10])
                                                             ]
                                                             (dosync
                                                               (alter tilstand assoc :historiklaengde historiklaengde
@@ -141,6 +141,23 @@
                                                       ]
                                                     (dosync (alter tilstand assoc noegle vaerdi))
                                                   )
+                                :opdater-vinduesstoerrelse (fn [
+                                                                 vinduesbredde
+                                                                 vindueshoejde
+                                                                 braetbredde
+                                                                 braethoejde
+                                                                 nedtaellingsramme-venstre-margen-pctr  ; [50 10 85 0]
+                                                                 nedtaellingsramme-hoejre-margen-pctr  ; [10 50 85 0]
+                                                               ]
+                                                             ((@(gaengse-grafikmodul :funktionalitet) :opdater-vinduesstoerrelse) vinduesbredde vindueshoejde braetbredde braethoejde nedtaellingsramme-venstre-margen-pctr nedtaellingsramme-hoejre-margen-pctr)
+                                                             (let [
+                                                                    graensekoordinater ((@(gaengse-grafikmodul :tilstand) :cell-grid-coords) :border-coords)
+                                                                    spilramme (@(gaengse-grafikmodul :tilstand) :base-frame)
+                                                                    statistikramme (game-utils-aiamg/calculate-aux-frame (:left graensekoordinater) (:right graensekoordinater) (:base-frame-top-border spilramme) (:top graensekoordinater) [0 60 10 10])
+                                                                  ]
+                                                                  (dosync (alter tilstand assoc :statistikramme statistikramme))
+                                                             )
+                                                          )
                                 :fokuser-paa-celle (fn [
                                                          musebevaegelseshaendelse
                                                        ]

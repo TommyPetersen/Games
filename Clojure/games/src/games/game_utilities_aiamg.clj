@@ -81,13 +81,13 @@
 			    frame-border-top
 			    frame-border-bottom
 				
-                            nedtaellingsramme-venstre-margin-pctr ; [50 10 85 0]
+                            pcts ; [50 10 85 0]
 			  ]
   (let [
-         frame-margin-pct-left (nth nedtaellingsramme-venstre-margin-pctr 0)	; I procent, mellem 0 og 100
-	 frame-margin-pct-right (nth nedtaellingsramme-venstre-margin-pctr 1)
-	 frame-margin-pct-top (nth nedtaellingsramme-venstre-margin-pctr 2)
-	 frame-margin-pct-bottom (nth nedtaellingsramme-venstre-margin-pctr 3)
+         frame-margin-pct-left (nth pcts 0)	; I procent, mellem 0 og 100
+	 frame-margin-pct-right (nth pcts 1)
+	 frame-margin-pct-top (nth pcts 2)
+	 frame-margin-pct-bottom (nth pcts 3)
        ]
        {
          :frame-x0 (+ frame-border-left (* (- frame-border-right frame-border-left) (/ frame-margin-pct-left 100)))
@@ -366,11 +366,12 @@
 
 ;;; Grafikmodul ;;;
 
-(def grafikmodul
+(defn nyt-grafikmodul []
   (let [
          synkroniseringsref (ref {
 	                           :punktgitter nil
 				   :vis-scene nil
+                                   :vinduesstoerrelse nil
 				 }
 		            )
          tilstand (ref {
@@ -444,6 +445,34 @@
 						      ]
 						    (dosync (alter tilstand assoc noegle vaerdi))
 				                  )
+                                :opdater-vinduesstoerrelse (fn [
+                                                                 vinduesbredde
+                                                                 vindueshoejde
+                                                                 braetbredde
+                                                                 braethoejde
+                                                                 nedtaellingsramme-venstre-margen-pctr  ; [50 10 85 0]
+                                                                 nedtaellingsramme-hoejre-margen-pctr  ; [10 50 85 0]
+                                                               ]
+                                                             (let [
+							            base-frame (calculate-base-frame vinduesbredde vindueshoejde)
+							            cell-grid-coords (generate-cell-grid-coords braetbredde braethoejde base-frame)
+							            border-coords (:border-coords cell-grid-coords)
+							            cell-coords (:cell-coords cell-grid-coords)
+							            nedtaellingsramme-venstre (calculate-aux-frame (:base-frame-left-border base-frame) (:left border-coords) (:top border-coords) (- (:bottom border-coords) 1) nedtaellingsramme-venstre-margen-pctr)
+							            nedtaellingsramme-hoejre (calculate-aux-frame (:right border-coords) (:base-frame-right-border base-frame) (:top border-coords) (- (:bottom border-coords) 1) nedtaellingsramme-hoejre-margen-pctr)
+							            nedtaellingsramme-spiller (if (= (@tilstand :spillerbrik) "*") nedtaellingsramme-venstre nedtaellingsramme-hoejre)
+							            nedtaellingsramme-modstander (if (= (@tilstand :spillerbrik) "*") nedtaellingsramme-hoejre nedtaellingsramme-venstre)
+                                                                  ]
+                                                                  (dosync
+                                                                    (alter tilstand assoc :base-frame base-frame
+                                                                                          :cell-grid-coords cell-grid-coords
+									                  :nedtaellingsramme-spiller nedtaellingsramme-spiller
+									                  :nedtaellingsramme-modstander nedtaellingsramme-modstander
+                                                                    )
+                                                                    (alter synkroniseringsref assoc :vinduesstoerrelse (.resizeWindow (@tilstand :kamera) vinduesbredde vindueshoejde vinduesbredde vindueshoejde))
+                                                                  )
+                                                             )
+                                                           )
 				:vaelg-fokuseret-celle (fn []
 				                         (let [
 					                        valgte-celler-indekseret (@tilstand :valgte-celler-indekseret)

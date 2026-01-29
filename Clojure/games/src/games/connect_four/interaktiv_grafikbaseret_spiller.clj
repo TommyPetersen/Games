@@ -8,7 +8,7 @@
             [clojure.edn :as edn]
             [clojure.core.async :refer [go >! <!! timeout]]
   )
-  (:import (java.awt.event MouseAdapter))
+  (:import (java.awt.event MouseAdapter ComponentAdapter))
 )
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -20,7 +20,7 @@
 
 (defn ny-spiller [spillernummer]
   (let [
-         specialiserede-grafikmodul connect-four-utils-aiamg/specialiserede-grafikmodul
+         specialiserede-grafikmodul (atom (connect-four-utils-aiamg/nyt-specialiseret-grafikmodul))
          vinduesbredde 800
          vindueshoejde 600
          base-frame (game-utils-aiamg/calculate-base-frame vinduesbredde vindueshoejde)
@@ -42,9 +42,9 @@
                                 ]
                               (try
                                 (dosync
-                                  ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-spiller samlet-tid-for-spiller)
-                                  ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-modstander samlet-tid-for-modstander)
-                                  ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+                                  ((@(((@specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-spiller samlet-tid-for-spiller)
+                                  ((@(((@specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-modstander samlet-tid-for-modstander)
+                                  ((@(@specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
                                 )
                                 (catch NullPointerException npe
                                   (go (>! @kanal-til-hent-spillertraek {:fra-koordinat [-1 -1] :til-koordinat [-1 -1]}))
@@ -65,16 +65,16 @@
                                     _ (reset! kanal-til-hent-spillertraek (timeout tidsgraense))
                                     j (let [i (<!! @kanal-til-hent-spillertraek)] (if (= i nil) -1 i))
                                     _ (reset! behandl-alle-musehaendelsestyper false)
-                                    _ ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [])
-                                    _ ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :fokuseret-celle-indekseret nil)
-                                    _ ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :fokuseret-celle-rammefarve nil)
+                                    _ ((@(((@specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [])
+                                    _ ((@(((@specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :fokuseret-celle-indekseret nil)
+                                    _ ((@(((@specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :fokuseret-celle-rammefarve nil)
                                     _ (reset! fortsaet-nedtaelling-for-spiller false)
                                   ]
                                   (if (connect-four-utils-misc/column-valid? @braet 7 6 j)
                                     (do
                                       (swap! braet connect-four-utils-misc/insert j spillerbrik)
                                       (dosync
-                                        ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :braet @braet)
+                                        ((@(((@specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :braet @braet)
                                       )
                                       (if (connect-four-utils-misc/is-not-full? @braet 6)
                                         (let [
@@ -104,16 +104,16 @@
                                (do
                                  (swap! braet connect-four-utils-misc/insert j modstanderbrik)
                                  (dosync
-                                   ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :braet @braet)
+                                   ((@(((@specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :braet @braet)
                                  )
                                )
                              )
                              (dosync
-                               ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [{:row-index 5 :column-index j}])
-                               ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-spiller 0)
-                               ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-modstander 0)
-                               ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
-                               ((@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [])
+                               ((@(((@specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [{:row-index 5 :column-index j}])
+                               ((@(((@specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-spiller 0)
+                               ((@(((@specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :samlet-tid-for-modstander 0)
+                               ((@(@specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+                               ((@(((@specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-tilstand) :valgte-celler-indekseret [])
                              )
                         )
                       )
@@ -124,16 +124,17 @@
                 "initialiserSpil"         (let [
                                                  dialogsystem (edn/read-string (second (:data enheds-inddata)))
                                                ]
+                                               (reset! specialiserede-grafikmodul (connect-four-utils-aiamg/nyt-specialiseret-grafikmodul))
                                                (reset! braet (connect-four-utils-misc/empty-board 7))
                                                (dosync
-                                                 ((@(specialiserede-grafikmodul :funktionalitet) :fastsaet-tilstand) @braet spillernummer vinduesbredde vindueshoejde (dialogsystem :vindueslokalisering-x) (dialogsystem :vindueslokalisering-y) 7 6 [50 10 85 0] [10 50 85 0] 120000)
-                                                 ((@(specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+                                                 ((@(@specialiserede-grafikmodul :funktionalitet) :fastsaet-tilstand) @braet spillernummer vinduesbredde vindueshoejde (dialogsystem :vindueslokalisering-x) (dialogsystem :vindueslokalisering-y) 7 6 [50 10 85 0] [10 50 85 0] 120000)
+                                                 ((@(@specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
                                                )
                                                (reset! kanal-til-hent-spillertraek (timeout tidsgraense))
                                                (let [
-                                                      fn-behandl-musehaendelse (connect-four-utils-aiamg/ny-musehaendelsesbehandler specialiserede-grafikmodul kanal-til-hent-spillertraek)
-                                                      fn-behandl-musebevaegelseshaendelse (connect-four-utils-aiamg/ny-musebevaegelsehaendelsesbehandler specialiserede-grafikmodul)
-                                                      skaerm (.getScreen (@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera))
+                                                      fn-behandl-musehaendelse (connect-four-utils-aiamg/ny-musehaendelsesbehandler @specialiserede-grafikmodul kanal-til-hent-spillertraek)
+                                                      fn-behandl-musebevaegelseshaendelse (connect-four-utils-aiamg/ny-musebevaegelsehaendelsesbehandler @specialiserede-grafikmodul)
+                                                      skaerm (.getScreen (@(((@specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera))
                                                     ]
                                                     (.addMouseListener skaerm (proxy [MouseAdapter] []
                                                                                 (mouseClicked [musehaendelse]
@@ -150,6 +151,23 @@
                                                                                         )
                                                                                       )
                                                                                     )
+                                                    )
+                                                    (.addComponentListener skaerm (proxy [ComponentAdapter] []
+                                                                                    (componentResized [komponenthaendelse]
+                                                                                      (let [
+                                                                                             _ (println "B:" (str specialiserede-grafikmodul))
+                                                                                             vin-bredde (.getWidth (.getScreen (@(((@specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera)))
+                                                                                             vin-hoejde (.getHeight (.getScreen (@(((@specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera)))
+                                                                                             _ (println "vin-bredde: " vin-bredde)
+                                                                                             _ (println "vin-hoejde: " vin-hoejde)
+                                                                                           ]
+                                                                                           (dosync
+                                                                                             ((@(((@specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-vinduesstoerrelse) vin-bredde vin-hoejde 7 6 [50 10 85 0] [10 50 85 0])
+                                                                                             ((@(@specialiserede-grafikmodul :funktionalitet) :rens-laerred-tegn-og-vis-alt))
+                                                                                           )
+                                                                                      )
+                                                                                    )
+                                                                                  )
                                                     )
                                                )
                                                {:data ["Ok"]}
