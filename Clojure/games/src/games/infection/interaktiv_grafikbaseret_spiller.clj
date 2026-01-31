@@ -172,7 +172,6 @@
                                                  (.addComponentListener skaerm (proxy [ComponentAdapter] []
                                                                                  (componentResized [komponenthaendelse]
                                                                                    (let [
-                                                                                          _ (println "C:" (str specialiserede-grafikmodul))
                                                                                           vin-bredde (.getWidth (.getScreen (@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera)))
                                                                                           vin-hoejde (.getHeight (.getScreen (@(((specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera)))
                                                                                         ]

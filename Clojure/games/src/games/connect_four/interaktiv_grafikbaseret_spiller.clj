@@ -155,11 +155,8 @@
                                                     (.addComponentListener skaerm (proxy [ComponentAdapter] []
                                                                                     (componentResized [komponenthaendelse]
                                                                                       (let [
-                                                                                             _ (println "B:" (str specialiserede-grafikmodul))
                                                                                              vin-bredde (.getWidth (.getScreen (@(((@specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera)))
                                                                                              vin-hoejde (.getHeight (.getScreen (@(((@specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :tilstand) :kamera)))
-                                                                                             _ (println "vin-bredde: " vin-bredde)
-                                                                                             _ (println "vin-hoejde: " vin-hoejde)
                                                                                            ]
                                                                                            (dosync
                                                                                              ((@(((@specialiserede-grafikmodul :forfaedre) :gaengse-grafikmodul) :funktionalitet) :opdater-vinduesstoerrelse) vin-bredde vin-hoejde 7 6 [50 10 85 0] [10 50 85 0])
