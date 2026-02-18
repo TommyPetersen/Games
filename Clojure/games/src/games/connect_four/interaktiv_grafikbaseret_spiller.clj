@@ -186,7 +186,23 @@
   )
 )
 
+(def aktuel-spiller1 (atom nil))
+(def aktuel-spiller2 (atom nil))
 
-(def spiller1 (ny-spiller 1))
-(def spiller2 (ny-spiller 2))
+(defn spiller1 [enheds-inddata]
+  (let [
+         foerste-dataelement (first (:data enheds-inddata))
+       ]
+       (if (= foerste-dataelement "initialiserSpil") (reset! aktuel-spiller1 (ny-spiller 1)))
+       (@aktuel-spiller1 enheds-inddata)
+  )
+)
 
+(defn spiller2 [enheds-inddata]
+  (let [
+         foerste-dataelement (first (:data enheds-inddata))
+       ]
+       (if (= foerste-dataelement "initialiserSpil") (reset! aktuel-spiller2 (ny-spiller 2)))
+       (@aktuel-spiller2 enheds-inddata)
+  )
+)
