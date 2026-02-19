@@ -139,7 +139,8 @@
          (let [first-data-element (first (:data enheds-inddata))]
              (case first-data-element
                 "initialiserSpil"         (let [
-                                                 dialogsystem (edn/read-string (second (:data enheds-inddata)))
+                                                 medsendte-dialogsystem (edn/read-string (second (:data enheds-inddata)))
+                                                 dialogsystem (if (= nil medsendte-dialogsystem) {:vindueslokalisering-x 200 :vindueslokalisering-y 200} medsendte-dialogsystem)
                                                ]
                                                (reset! braet (infektion-hjlp-div/init-board "*" "¤"))
                                                (reset! braethistorik [@braet])

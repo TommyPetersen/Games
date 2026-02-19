@@ -122,7 +122,8 @@
          (let [first-data-element (first (:data enheds-inddata))]
              (case first-data-element
                 "initialiserSpil"         (let [
-                                                 dialogsystem (edn/read-string (second (:data enheds-inddata)))
+                                                 medsendte-dialogsystem (edn/read-string (second (:data enheds-inddata)))
+                                                 dialogsystem (if (= nil medsendte-dialogsystem) {:vindueslokalisering-x 200 :vindueslokalisering-y 200} medsendte-dialogsystem)
                                                ]
                                                (reset! specialiserede-grafikmodul (connect-four-utils-aiamg/nyt-specialiseret-grafikmodul))
                                                (reset! braet (connect-four-utils-misc/empty-board 7))
